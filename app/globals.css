@@ -18,6 +18,9 @@ body {
   color: #ffffff;
   scroll-behavior: smooth;
 }
+body {
+  font-family: "Arial Rounded MT Bold", Arial, Helvetica, sans-serif;
+}
 
 a {
   color: inherit;
