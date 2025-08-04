@@ -1,9 +1,0 @@
-export default function ProjectsPage() {
-  return (
-    <div className="p-8 text-center text-xl text-blue-600">
-      <h1>My Projects</h1>
-      <p>This is the projects page!</p>
-    </div>
-  );
-}
-
