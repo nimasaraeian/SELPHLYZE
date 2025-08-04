@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { testCategories } from "../../data/tests";
 import { motion } from "framer-motion";
 
@@ -10,29 +9,30 @@ export default function TestsPage() {
   const [ageRange, setAgeRange] = useState("");
   const [gender, setGender] = useState("");
   const [country, setCountry] = useState("");
-  const [displayName, setDisplayName] = useState(""); // اسم دلخواه
+  const [displayName, setDisplayName] = useState("");
   const [selectedTest, setSelectedTest] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const router = useRouter();
 
   const isComplete = ageRange && gender && country;
 
-  // وقتی روی دکمه تست کلیک بشه
   const startTest = (testUrl: string) => {
-    console.log("Start Test Clicked!", testUrl);
     setSelectedTest(testUrl);
-    setShowModal(true); // همیشه مودال باز بشه
-    console.log("Modal should now be visible!");
+    setShowModal(true);
   };
 
-  // وقتی فرم مودال پر شد
-  const handleContinue = () => {
+  const handleContinue = async () => {
     localStorage.setItem(
       "userInfo",
       JSON.stringify({ ageRange, gender, country, displayName })
     );
     setShowModal(false);
-    console.log("User info saved, redirecting to:", selectedTest);
-    router.push(selectedTest);
+    setIsAnalyzing(true);
+
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      router.push(selectedTest);
+    }, 3000);
   };
 
   return (
@@ -54,28 +54,14 @@ export default function TestsPage() {
                   key={idx}
                   className="group bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl border border-gray-700 hover:border-teal-400 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 flex flex-col"
                 >
-                  {/* Image */}
-                  <div className="mb-6 overflow-hidden rounded-2xl flex justify-center">
-                    <Image
-                      src={test.image}
-                      alt={test.title}
-                      width={300}
-                      height={450}
-                      className="object-cover w-full h-[450px] group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-
-                  {/* Title */}
                   <h3 className="text-2xl font-bold mb-3 text-gray-200 group-hover:text-teal-300 transition-colors text-center">
                     {test.title}
                   </h3>
 
-                  {/* Description */}
                   <p className="text-gray-400 mb-6 text-lg leading-relaxed text-center">
                     {test.description}
                   </p>
 
-                  {/* Start Test Button */}
                   <button
                     onClick={() =>
                       startTest(
@@ -96,7 +82,6 @@ export default function TestsPage() {
         ))}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -109,17 +94,6 @@ export default function TestsPage() {
             transition={{ duration: 0.4 }}
             className="bg-white rounded-2xl p-8 w-full max-w-md text-gray-800 shadow-2xl"
           >
-            {/* Logo */}
-            <div className="flex justify-center mb-6">
-              <Image
-                src="/image/SELPHLYZE_LOGO.png" // مسیر لوگوی Selphlyze
-                alt="Selphlyze Logo"
-                width={90}
-                height={90}
-                className="rounded-full"
-              />
-            </div>
-
             <h2 className="text-2xl font-bold text-center mb-4 text-indigo-600">
               Before You Begin 🌱
             </h2>
@@ -127,24 +101,17 @@ export default function TestsPage() {
               Please answer these quick questions to personalize your journey.
             </p>
 
-            {/* Display Name */}
             <div className="mb-4">
-              <label className="block mb-2 font-medium">
-                Choose Your Display Name (Optional)
-              </label>
+              <label className="block mb-2 font-medium">Display Name</label>
               <input
                 type="text"
-                placeholder="Enter any name you like"
+                placeholder="Enter your display name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400"
               />
-              <p className="text-sm text-gray-400 mt-1">
-                This name is just for fun — choose anything you like ✨
-              </p>
             </div>
 
-            {/* Age Range */}
             <div className="mb-4">
               <label className="block mb-2 font-medium">Age Range</label>
               <select
@@ -162,7 +129,6 @@ export default function TestsPage() {
               </select>
             </div>
 
-            {/* Gender */}
             <div className="mb-4">
               <label className="block mb-2 font-medium">Gender</label>
               <select
@@ -177,7 +143,6 @@ export default function TestsPage() {
               </select>
             </div>
 
-            {/* Country */}
             <div className="mb-6">
               <label className="block mb-2 font-medium">Country</label>
               <select
@@ -208,6 +173,22 @@ export default function TestsPage() {
             </button>
           </motion.div>
         </motion.div>
+      )}
+
+      {isAnalyzing && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/90 z-[9999]">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="w-16 h-16 border-4 border-teal-400 border-t-transparent rounded-full"
+          ></motion.div>
+          <p className="mt-6 text-lg font-semibold text-teal-300">
+            Analyzing your responses...
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            This may take a few seconds
+          </p>
+        </div>
       )}
     </main>
   );

@@ -9,6 +9,7 @@ out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Env files (never push API keys)
 .env
@@ -21,5 +22,25 @@ yarn-error.log*
 *.pub
 *.txt
 
+# OpenAI or other secret configs
+openai.json
+config.json
+
 # VSCode settings
 .vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cache
+.cache/
+*.swp
+
+# Test coverage
+coverage/
+
+# Uploads or generated images
+public/uploads/
+public/temp/

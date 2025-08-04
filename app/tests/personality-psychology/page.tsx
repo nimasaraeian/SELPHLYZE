@@ -1,95 +1,80 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function PersonalityPsychologyPage() {
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [answers, setAnswers] = useState<any>({});
-  const [analysis, setAnalysis] = useState<string>("");
+const questions = [
+  { id: 1, text: "How do you feel when meeting new people?" },
+  { id: 2, text: "How do you usually react in stressful situations?" },
+  { id: 3, text: "How do you approach solving a new problem?" },
+  { id: 4, text: "What motivates you most to achieve your goals?" },
+  { id: 5, text: "How do you react to unexpected changes?" },
+];
 
-  useEffect(() => {
-    const data = localStorage.getItem("userInfo");
-    if (data) setUserInfo(JSON.parse(data));
-  }, []);
+const options = [
+  "Strongly Disagree",
+  "Disagree",
+  "Somewhat Disagree",
+  "Neutral",
+  "Somewhat Agree",
+  "Agree",
+  "Strongly Agree",
+];
 
-  const analyzeTest = async () => {
-    if (!userInfo) return;
+export default function PersonalityTestPage() {
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const router = useRouter();
 
-    try {
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: userInfo, answers }),
-      });
+  const handleSelect = (qId: number, value: string) => {
+    setAnswers({ ...answers, [qId]: value });
+  };
 
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
-
-      const data = await res.json();
-      console.log("AI raw response:", data);
-
-      const aiText = data.choices?.[0]?.message?.content || "No analysis received.";
-      setAnalysis(aiText);
-    } catch (error) {
-      console.error("Error analyzing:", error);
-      setAnalysis("❌ Could not get analysis. Please check server logs.");
-    }
+  const handleSubmit = async () => {
+    localStorage.setItem("testAnswers", JSON.stringify(answers));
+    router.push("/analysis");
   };
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-10">
-      {userInfo && (
-        <div className="mb-8 bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-400">
-            Welcome {userInfo.displayName || "Guest"} 👋
-          </h2>
-          <p>Age Range: {userInfo.ageRange}</p>
-          <p>Gender: {userInfo.gender}</p>
-          <p>Country: {userInfo.country}</p>
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-950 via-purple-900 to-indigo-800 p-8 text-white">
+      <h1 className="text-4xl font-extrabold text-cyan-300 mb-8 drop-shadow-lg">
+        Personality Test
+      </h1>
 
-      <h1 className="text-3xl font-bold mb-6">Personality Test (5 Questions)</h1>
-
-      {/* Questions */}
-      {[
-        "I enjoy meeting new people.",
-        "I often plan things carefully before doing them.",
-        "I get stressed easily.",
-        "I like trying out new experiences.",
-        "I prefer working in a team rather than alone."
-      ].map((q, idx) => (
-        <div key={idx} className="mb-6">
-          <label className="block mb-2">{q}</label>
-          <select
-            onChange={(e) =>
-              setAnswers((prev: any) => ({ ...prev, [`q${idx + 1}`]: e.target.value }))
-            }
-            className="w-full px-4 py-2 rounded-lg text-black"
+      <div className="space-y-8 w-full max-w-4xl">
+        {questions.map((q) => (
+          <div
+            key={q.id}
+            className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20"
           >
-            <option value="">Select</option>
-            <option value="strongly agree">Strongly Agree</option>
-            <option value="agree">Agree</option>
-            <option value="neutral">Neutral</option>
-            <option value="disagree">Disagree</option>
-            <option value="strongly disagree">Strongly Disagree</option>
-          </select>
-        </div>
-      ))}
+            <h2 className="font-bold text-xl mb-5 text-cyan-200 drop-shadow-md">
+              {q.text}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleSelect(q.id, opt)}
+                  className={`p-3 rounded-xl text-sm font-semibold transition-all shadow-md
+                    ${
+                      answers[q.id] === opt
+                        ? "bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
       <button
-        onClick={analyzeTest}
-        className="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-700"
+        onClick={handleSubmit}
+        disabled={Object.keys(answers).length < questions.length}
+        className="mt-10 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-2xl shadow-2xl hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
       >
-        Submit and Analyze →
+        Analyze My Personality
       </button>
-
-      {analysis && (
-        <div className="mt-8 bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Your Personalized Analysis</h2>
-          <p className="text-gray-300 whitespace-pre-line">{analysis}</p>
-        </div>
-      )}
-    </main>
+    </div>
   );
 }
