@@ -18,14 +18,14 @@ export default function Home() {
             alt="Selphlyze Logo"
             width={280}
             height={280}
-            className="mx-auto drop-shadow-6xl relative z-10"
+            className="mx-auto drop-shadow-2xl relative z-10"
             priority
           />
         </div>
 
         {/* Title */}
         <h1 className="text-6xl md:text-7xl font-extrabold mb-10 bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 bg-clip-text text-transparent tracking-wide">
-          
+          Selphlyze
         </h1>
 
         {/* Search Box */}
