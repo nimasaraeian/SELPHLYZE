@@ -22,24 +22,6 @@ const modules = [
     color: "from-blue-500 to-indigo-600",
     href: "/modules/joblyze",
   },
-  {
-    name: "Foodlyze",
-    description: "Understand your eating habits through psychology.",
-    color: "from-green-400 to-emerald-600",
-    href: "/modules/foodlyze",
-  },
-  {
-    name: "Shoplyze",
-    description: "Analyze your shopping behavior and preferences.",
-    color: "from-purple-500 to-violet-700",
-    href: "/modules/shoplyze",
-  },
-  {
-    name: "Travellyze",
-    description: "Discover your travel personality and dream destinations.",
-    color: "from-orange-400 to-red-500",
-    href: "/modules/travellyze",
-  },
 ];
 
 export default function ModulesPage() {
@@ -59,7 +41,7 @@ export default function ModulesPage() {
         </p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {modules.map((mod, index) => (
+          {modules.map((mod) => (
             <motion.div
               key={mod.name}
               whileHover={{ scale: 1.05 }}
