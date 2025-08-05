@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { supabase } from "@/app/lib/supabaseClient"
 export async function POST(req: Request) {
   console.log("🔑 OPENAI KEY:", process.env.OPENAI_API_KEY ? "Loaded" : "Missing");
 
