@@ -1,65 +1,60 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { useState } from "react";
 
-const modules = [
-  {
-    name: "Synclyze",
-    description: "Discover relationship harmony and sync with your partner.",
-    color: "from-pink-500 to-rose-600",
-    href: "/modules/synclyze",
-  },
-  {
-    name: "Shadowlyze",
-    description: "Explore the hidden layers of your shadow self.",
-    color: "from-gray-700 to-gray-900",
-    href: "/modules/shadowlyze",
-  },
-  {
-    name: "Joblyze",
-    description: "Find the career path that truly matches your personality.",
-    color: "from-blue-500 to-indigo-600",
-    href: "/modules/joblyze",
-  },
-];
+export default function SynclyzePage() {
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState("");
 
-export default function ModulesPage() {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        setResponse(`❌ Error: ${data.error}`);
+      } else {
+        setResponse(JSON.stringify(data, null, 2));
+      }
+    } catch (err: any) {
+      setResponse(`❌ Fetch failed: ${err.message}`);
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-16 px-6"
-    >
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-center text-indigo-700 mb-12">
-          Explore Selphlyze Modules
-        </h1>
-        <p className="text-center text-gray-600 max-w-2xl mx-auto mb-14">
-          Dive into our specialized modules designed to unlock different layers
-          of your psychology. Choose one to begin your journey.
-        </p>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {modules.map((mod) => (
-            <motion.div
-              key={mod.name}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Link href={mod.href}>
-                <div
-                  className={`rounded-2xl shadow-lg hover:shadow-2xl bg-gradient-to-r ${mod.color} p-8 h-56 flex flex-col justify-between text-white cursor-pointer`}
-                >
-                  <h2 className="text-2xl font-bold">{mod.name}</h2>
-                  <p className="text-sm opacity-90">{mod.description}</p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+    <div style={{ maxWidth: "600px", margin: "50px auto", fontFamily: "sans-serif" }}>
+      <h1>🔗 Synclyze Test</h1>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Type your prompt here..."
+          style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+        />
+        <button type="submit" style={{ padding: "10px 20px" }}>
+          Analyze
+        </button>
+      </form>
+      {response && (
+        <pre
+          style={{
+            background: "#f4f4f4",
+            padding: "10px",
+            marginTop: "20px",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {response}
+        </pre>
+      )}
+    </div>
   );
 }
