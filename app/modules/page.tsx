@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const questions = [
   "Do you prefer spending weekends together or separately?",
@@ -15,6 +16,7 @@ export default function SynclyzePage() {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
+  const router = useRouter();
 
   const handleSelect = (qIndex: number, option: string) => {
     setAnswers((prev) => ({ ...prev, [qIndex]: option }));
@@ -26,7 +28,7 @@ export default function SynclyzePage() {
     setResponse("");
 
     try {
-      const prompt = questions.map((q, i) => `${q} → ${answers[i] || "No answer"}`).join("\n");
+      const prompt = questions.map((q, i) => `${q}: ${answers[i] || "No answer"}`).join("\n");
 
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -35,67 +37,76 @@ export default function SynclyzePage() {
       });
 
       const data = await res.json();
-
-      if (data.error) {
-        setResponse(`❌ Error: ${data.error}`);
-      } else if (data.aiResponse) {
-        setResponse(data.aiResponse);
-      } else {
-        setResponse("⚠️ No content received from AI.");
-      }
+      setResponse(data.aiResponse || "⚠️ No content received from AI.");
     } catch (err: any) {
-      setResponse(`❌ Fetch failed: ${err.message}`);
+      setResponse(`❌ Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSyncWithPartner = () => {
+    const sessionId = Date.now().toString();
+    localStorage.setItem("synclyzeAnswers", JSON.stringify({ sessionId, answers }));
+    router.push(`/modules/synclyze/invite?session=${sessionId}`);
+  };
+
   return (
-    <div className="max-w-3xl mx-auto py-10 px-6 text-white">
-      <h1 className="text-3xl font-bold text-center mb-8 text-green-400">
-        🔗 Synclyze Compatibility Test
-      </h1>
+    <div className="min-h-screen bg-black text-white py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-green-400 mb-10">
+          🔗 Synclyze Compatibility Test
+        </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {questions.map((q, i) => (
-          <div key={i} className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <p className="font-semibold mb-4 text-lg">{q}</p>
-            <div className="flex flex-wrap gap-3">
-              {options.map((option) => (
-                <button
-                  type="button"
-                  key={option}
-                  onClick={() => handleSelect(i, option)}
-                  className={`px-4 py-2 rounded-lg border ${
-                    answers[i] === option
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {questions.map((q, i) => (
+            <div key={i} className="bg-gray-900 rounded-xl p-6 shadow-lg">
+              <p className="text-lg font-semibold mb-4">{q}</p>
+              <div className="flex flex-wrap gap-3">
+                {options.map((option) => (
+                  <button
+                    type="button"
+                    key={option}
+                    onClick={() => handleSelect(i, option)}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      answers[i] === option
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
             </div>
+          ))}
+
+          <div className="flex justify-center gap-6 mt-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-green-500 hover:bg-green-600 text-white px-10 py-3 rounded-lg font-semibold text-lg shadow-lg transition disabled:opacity-50"
+            >
+              {loading ? "⏳ Analyzing..." : "Submit & Get Analysis"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSyncWithPartner}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transition"
+            >
+              🔗 Sync with Partner
+            </button>
           </div>
-        ))}
+        </form>
 
-        <div className="text-center">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md transition disabled:opacity-50"
-          >
-            {loading ? "⏳ Analyzing..." : "Submit & Get Analysis"}
-          </button>
-        </div>
-      </form>
-
-      {response && (
-        <div className="mt-10 bg-gray-900 border border-green-600 rounded-xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold text-green-400 mb-4">AI Analysis Result</h2>
-          <p className="whitespace-pre-wrap text-gray-200">{response}</p>
-        </div>
-      )}
+        {response && (
+          <div className="mt-12 bg-gray-800 border border-green-600 rounded-xl p-6 shadow-lg">
+            <h2 className="text-2xl font-bold text-green-400 mb-4">AI Analysis Result</h2>
+            <p className="whitespace-pre-wrap text-gray-200 leading-relaxed">{response}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
