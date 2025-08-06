@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -33,4 +32,9 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({ message: "Analyze endpoint is alive 🚀" });
 }
