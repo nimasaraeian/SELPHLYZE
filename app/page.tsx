@@ -1,6 +1,6 @@
 // app/page.tsx
 import Image from "next/image";
-import AISearchChat from "@/components/AISearchChat";
+import AISearchChatFixed from "@/components/AISearchChatFixed";
 
 export default function Home() {
   return (
@@ -29,8 +29,8 @@ export default function Home() {
           
         </h1>
 
-        {/* AI Search & Chat Component */}
-        <AISearchChat />
+        {/* AI Search & Chat Component (Fixed) */}
+        <AISearchChatFixed />
 
         {/* Additional Info */}
         <div className="mt-12 text-center">

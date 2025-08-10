@@ -200,7 +200,7 @@ export default function FloatingAIChat() {
               language === "nl" ? "Mijn Profiel" :
               "My Profile",
         action: "/profile",
-        icon: User
+        icon: Users
       });
     }
 
