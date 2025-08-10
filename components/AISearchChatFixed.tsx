@@ -112,7 +112,7 @@ export default function AISearchChatFixed() {
         type: "therapist",
         title: currentLanguage === "fa" ? "یافتن تراپیست‌ها" : "Find Therapists",
         description: "Connect with professional therapists worldwide",
-        path: "/trappists",
+        path: "/therapists",
         relevance: 0.9
       });
     }

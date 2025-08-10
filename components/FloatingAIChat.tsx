@@ -32,7 +32,6 @@ interface ChatMessage {
   suggestions?: {
     text: string;
     action: string;
-    icon: React.ComponentType<any>;
   }[];
 }
 
@@ -90,7 +89,7 @@ export default function FloatingAIChat() {
       "/tests": "psychology tests section",
       "/psychology": "psychology articles section", 
       "/modules": "AI psychology modules section",
-      "/trappists": "therapist network section",
+      "/therapists": "therapist network section",
       "/profile": "user profile section"
     };
     
@@ -116,15 +115,13 @@ export default function FloatingAIChat() {
     };
 
     // Home navigation
-    const homeKeywords = ["home", "خانه", "صفحه اصلی", "inicio", "accueil", "zuhause", "casa", "дом", "家", "ホーム", "홈", "घर", "ev", "início", "thuis"];
+    const homeKeywords = ["home", "خانه", "صفحه اصلی", "inicio", "accueil", "casa", "дом", "家", "ホーム", "홈", "घर", "ev", "início"];
     if (homeKeywords.some(keyword => lowercaseQuery.includes(keyword))) {
       suggestions.push({
         text: language === "fa" ? "برو به خانه" : 
               language === "ar" ? "الذهاب إلى الصفحة الرئيسية" :
               language === "es" ? "Ir al Inicio" :
               language === "fr" ? "Aller à l'Accueil" :
-              language === "de" ? "Zur Startseite" :
-              language === "it" ? "Vai alla Home" :
               language === "ru" ? "На Главную" :
               language === "zh" ? "回到首页" :
               language === "ja" ? "ホームに戻る" :
@@ -132,22 +129,21 @@ export default function FloatingAIChat() {
               language === "hi" ? "घर जाएं" :
               language === "tr" ? "Ana Sayfaya Git" :
               language === "pt" ? "Ir para o Início" :
-              language === "nl" ? "Naar Home" :
               "Go Home",
         action: "/",
-        icon: Home
+
       });
     }
 
     // Tests
-    const testKeywords = ["test", "تست", "آزمون", "prueba", "test", "test", "test", "тест", "测试", "テスト", "테스트", "परीक्षण", "test", "teste", "test"];
+    const testKeywords = ["test", "تست", "آزمون", "prueba", "test", "тест", "测试", "テスト", "테스트", "परीक्षण", "test", "teste"];
     if (testKeywords.some(keyword => lowercaseQuery.includes(keyword)) || 
         keywords.depression.some(keyword => lowercaseQuery.includes(keyword.toLowerCase())) ||
         keywords.anxiety.some(keyword => lowercaseQuery.includes(keyword.toLowerCase()))) {
       suggestions.push({
         text: getTranslation("tests", language, "sections"),
         action: "/tests",
-        icon: TestTube
+
       });
     }
 
@@ -155,41 +151,39 @@ export default function FloatingAIChat() {
     if (keywords.therapist.some(keyword => lowercaseQuery.includes(keyword.toLowerCase()))) {
       suggestions.push({
         text: getTranslation("therapists", language, "sections"),
-        action: "/trappists", 
-        icon: Users
+        action: "/therapists", 
+
       });
     }
 
     // Modules
-    const moduleKeywords = ["module", "ماژول", "analysis", "تحلیل", "módulo", "module", "modul", "modulo", "модуль", "模块", "モジュール", "모듈", "मॉड्यूल", "modül", "módulo", "module"];
+    const moduleKeywords = ["module", "ماژول", "analysis", "تحلیل", "módulo", "module", "модуль", "模块", "モジュール", "모듈", "मॉड्यूल", "modül", "módulo"];
     if (moduleKeywords.some(keyword => lowercaseQuery.includes(keyword))) {
       suggestions.push({
         text: getTranslation("modules", language, "sections"),
         action: "/modules",
-        icon: Brain
+
       });
     }
 
     // Articles
-    const articleKeywords = ["article", "مقاله", "research", "پژوهش", "artículo", "article", "artikel", "articolo", "статья", "文章", "記事", "기사", "लेख", "makale", "artigo", "artikel"];
+    const articleKeywords = ["article", "مقاله", "research", "پژوهش", "artículo", "article", "статья", "文章", "記事", "기사", "लेख", "makale", "artigo"];
     if (articleKeywords.some(keyword => lowercaseQuery.includes(keyword))) {
       suggestions.push({
         text: getTranslation("articles", language, "sections"),
         action: "/psychology",
-        icon: BookOpen
+
       });
     }
 
     // Profile
-    const profileKeywords = ["profile", "پروفایل", "account", "حساب", "perfil", "profil", "profil", "profilo", "профиль", "个人资料", "プロフィール", "프로필", "प्रोफ़ाइल", "profil", "perfil", "profiel"];
+    const profileKeywords = ["profile", "پروفایل", "account", "حساب", "perfil", "profil", "профиль", "个人资料", "プロフィール", "프로필", "प्रोफ़ाइल", "profil", "perfil"];
     if (profileKeywords.some(keyword => lowercaseQuery.includes(keyword))) {
       suggestions.push({
         text: language === "fa" ? "پروفایل من" :
               language === "ar" ? "ملفي الشخصي" :
               language === "es" ? "Mi Perfil" :
               language === "fr" ? "Mon Profil" :
-              language === "de" ? "Mein Profil" :
-              language === "it" ? "Il Mio Profilo" :
               language === "ru" ? "Мой Профиль" :
               language === "zh" ? "我的资料" :
               language === "ja" ? "マイプロフィール" :
@@ -197,10 +191,9 @@ export default function FloatingAIChat() {
               language === "hi" ? "मेरी प्रोफ़ाइल" :
               language === "tr" ? "Profilim" :
               language === "pt" ? "Meu Perfil" :
-              language === "nl" ? "Mijn Profiel" :
               "My Profile",
         action: "/profile",
-        icon: Users
+
       });
     }
 
@@ -234,7 +227,7 @@ export default function FloatingAIChat() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, language }),
       });
 
       const data = await response.json();
@@ -312,7 +305,7 @@ export default function FloatingAIChat() {
       const currentContext = getCurrentPageContext();
       // Try to detect browser language, fallback to English
       const browserLang = navigator.language.substring(0, 2) as SupportedLanguage;
-      const detectedLang = ["fa", "en", "ar", "es", "fr", "de", "it", "ru", "zh", "ja", "ko", "hi", "tr", "pt", "nl"].includes(browserLang) 
+      const detectedLang = ["en", "fr", "es", "pt", "ko", "ja", "zh", "ar", "fa", "tr", "ru", "hi"].includes(browserLang) 
         ? browserLang as SupportedLanguage 
         : "en";
       
@@ -324,9 +317,9 @@ export default function FloatingAIChat() {
         content: getTranslation("aiGreeting", detectedLang),
         timestamp: new Date(),
         suggestions: [
-          { text: getTranslation("tests", detectedLang, "sections"), action: "/tests", icon: TestTube },
-          { text: getTranslation("therapists", detectedLang, "sections"), action: "/trappists", icon: Users },
-          { text: "AI Modules", action: "/modules", icon: Brain }
+          { text: getTranslation("tests", detectedLang, "sections"), action: "/tests" },
+          { text: getTranslation("therapists", detectedLang, "sections"), action: "/therapists" },
+          { text: "AI Modules", action: "/modules" }
         ]
       };
       
@@ -382,8 +375,6 @@ export default function FloatingAIChat() {
                      currentLanguage === "ar" ? "المساعد الذكي" :
                      currentLanguage === "es" ? "Asistente IA" :
                      currentLanguage === "fr" ? "Assistant IA" :
-                     currentLanguage === "de" ? "KI-Assistent" :
-                     currentLanguage === "it" ? "Assistente IA" :
                      currentLanguage === "ru" ? "ИИ-Помощник" :
                      currentLanguage === "zh" ? "AI助手" :
                      currentLanguage === "ja" ? "AIアシスタント" :
@@ -391,7 +382,6 @@ export default function FloatingAIChat() {
                      currentLanguage === "hi" ? "AI सहायक" :
                      currentLanguage === "tr" ? "AI Asistanı" :
                      currentLanguage === "pt" ? "Assistente IA" :
-                     currentLanguage === "nl" ? "AI Assistent" :
                      "AI Assistant"}
                   </h3>
                   <p className="text-gray-400 text-xs">
@@ -399,8 +389,6 @@ export default function FloatingAIChat() {
                      currentLanguage === "ar" ? "متصل • جاهز للمساعدة" :
                      currentLanguage === "es" ? "En línea • Aquí para ayudar" :
                      currentLanguage === "fr" ? "En ligne • Ici pour aider" :
-                     currentLanguage === "de" ? "Online • Bereit zu helfen" :
-                     currentLanguage === "it" ? "Online • Qui per aiutare" :
                      currentLanguage === "ru" ? "Онлайн • Готов помочь" :
                      currentLanguage === "zh" ? "在线 • 随时帮助" :
                      currentLanguage === "ja" ? "オンライン • サポート準備完了" :
@@ -408,7 +396,6 @@ export default function FloatingAIChat() {
                      currentLanguage === "hi" ? "ऑनलाइन • मदद के लिए तैयार" :
                      currentLanguage === "tr" ? "Çevrimiçi • Yardıma hazır" :
                      currentLanguage === "pt" ? "Online • Aqui para ajudar" :
-                     currentLanguage === "nl" ? "Online • Klaar om te helpen" :
                      "Online • Here to help"}
                   </p>
                 </div>
@@ -480,21 +467,33 @@ export default function FloatingAIChat() {
                             {/* Suggestions */}
                             {message.suggestions && (
                               <div className="mt-2 space-y-1">
-                                {message.suggestions.map((suggestion, index) => (
-                                  <motion.button
-                                    key={index}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => handleSuggestionClick(suggestion.action)}
-                                    className="flex items-center gap-2 w-full p-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-left text-xs transition-colors group"
-                                  >
-                                    <suggestion.icon className="w-3 h-3 text-teal-400" />
-                                    <span className="text-white group-hover:text-teal-300 transition-colors">
-                                      {suggestion.text}
-                                    </span>
-                                    <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-teal-400 ml-auto transition-colors" />
-                                  </motion.button>
-                                ))}
+                                {message.suggestions.map((suggestion, index) => {
+                                  // Get the appropriate icon based on action
+                                  let IconComponent;
+                                  if (suggestion.action === "/tests") IconComponent = TestTube;
+                                  else if (suggestion.action === "/therapists") IconComponent = Users;
+                                  else if (suggestion.action === "/modules") IconComponent = Brain;
+                                  else if (suggestion.action === "/psychology") IconComponent = BookOpen;
+                                  else if (suggestion.action === "/profile") IconComponent = User;
+                                  else if (suggestion.action === "/") IconComponent = Home;
+                                  else IconComponent = Heart;
+
+                                  return (
+                                    <motion.button
+                                      key={index}
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
+                                      onClick={() => handleSuggestionClick(suggestion.action)}
+                                      className="flex items-center gap-2 w-full p-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-left text-xs transition-colors group"
+                                    >
+                                      <IconComponent className="w-3 h-3 text-teal-400" />
+                                      <span className="text-white group-hover:text-teal-300 transition-colors">
+                                        {suggestion.text}
+                                      </span>
+                                      <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-teal-400 ml-auto transition-colors" />
+                                    </motion.button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>

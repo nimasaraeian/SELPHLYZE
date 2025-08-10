@@ -118,7 +118,7 @@ export default function AISearchChat() {
         type: "therapist",
         title: getTranslation("therapists", language, "sections"),
         description: "Connect with professional therapists worldwide",
-        path: "/trappists",
+        path: "/therapists",
         relevance: 0.9
       });
     }

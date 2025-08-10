@@ -21,7 +21,7 @@ const navItems = [
   { name: "Tests", href: "/tests", icon: TestTube },
   { name: "Psychology", href: "/psychology", icon: Brain },
   { name: "Modules", href: "/modules", icon: Sparkles },
-  { name: "Trappists", href: "/trappists", icon: Users },
+  { name: "Therapists", href: "/therapists", icon: Users },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Contact", href: "/contact", icon: Mail },
 ];
@@ -42,38 +42,22 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Desktop Navbar */}
+      {/* Centered Navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className={`w-full fixed top-0 z-50 transition-all duration-500 ${
           scrolled 
-            ? "glass-dark shadow-2xl py-3" 
-            : "bg-transparent py-4"
+            ? "glass-dark shadow-2xl py-4" 
+            : "bg-transparent py-6"
         }`}
       >
-        <div className="container-fluid">
-          <div className="flex justify-between items-center">
-            
-            {/* Logo */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-3"
-            >
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Brain className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold text-gradient-psyche">
-                  SELPHLYZE
-                </span>
-              </Link>
-            </motion.div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-2">
+        <div className="max-w-4xl mx-auto px-6">
+          
+          {/* Centered Navigation */}
+          <div className="flex justify-center items-center">
+            <div className="hidden md:flex items-center bg-black/20 backdrop-blur-md rounded-full border border-white/10 px-8 py-4 gap-8">
               {navItems.map((item, index) => {
                 const isActive = pathname === item.href;
                 const IconComponent = item.icon;
@@ -83,48 +67,33 @@ export default function Navbar() {
                     key={item.name}
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    transition={{ delay: index * 0.05, duration: 0.5 }}
                   >
                     <Link
                       href={item.href}
                       className={`
-                        relative px-6 py-3 rounded-xl font-medium text-sm
-                        transition-all duration-300 group
+                        relative px-4 py-2 rounded-full font-medium text-base
+                        transition-all duration-300 group flex items-center gap-2
                         ${isActive 
-                          ? "text-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
-                          : "text-gray-300 hover:text-white"
+                          ? "text-white bg-gradient-to-r from-teal-500 to-blue-500" 
+                          : "text-gray-300 hover:text-white hover:bg-white/10"
                         }
                       `}
                     >
-                      <div className="flex items-center gap-2">
-                        <IconComponent className="w-4 h-4" />
-                        <span>{item.name}</span>
-                      </div>
-                      
-                      {/* Active indicator */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeIndicator"
-                          className="absolute inset-0 bg-gradient-to-r from-teal-500/10 via-blue-500/10 to-purple-500/10 rounded-xl border border-teal-400/20"
-                          initial={false}
-                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        />
-                      )}
-                      
-                      {/* Hover effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-blue-500/5 to-purple-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <IconComponent className="w-5 h-5" />
+                      <span className="hidden lg:block">{item.name}</span>
                     </Link>
                   </motion.div>
                 );
               })}
             </div>
-
+            
             {/* Mobile Menu Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-3 rounded-xl glass border border-white/20 text-white hover:bg-white/10 transition-all duration-300"
+              className="md:hidden p-4 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-white hover:bg-white/10 transition-all duration-300"
             >
               <AnimatePresence mode="wait">
                 {isOpen ? (

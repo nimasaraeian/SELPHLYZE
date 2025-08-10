@@ -12,6 +12,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { detectLanguage, SupportedLanguage } from "@/utils/multilingual";
 
 interface ChatMessage {
   id: string;
@@ -25,19 +26,23 @@ export default function SimpleAISearch() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<"fa" | "en">("en");
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>("en");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Simple language detection
-  const detectLanguage = (text: string): "fa" | "en" => {
-    const persianPattern = /[\u0600-\u06FF]/;
-    return persianPattern.test(text) ? "fa" : "en";
-  };
+
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+    // Only scroll within the chat container, not the entire page
+    if (showChat && chatMessages.length > 0 && chatEndRef.current) {
+      setTimeout(() => {
+        const chatContainer = chatEndRef.current?.closest('.overflow-y-auto');
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 150);
+    }
+  }, [chatMessages, showChat]);
 
   // Load chat history
   useEffect(() => {
@@ -107,7 +112,7 @@ export default function SimpleAISearch() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, language: currentLanguage }),
       });
 
       if (!response.ok) {
@@ -211,10 +216,20 @@ export default function SimpleAISearch() {
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             placeholder={
               currentLanguage === "fa" ? "هر چیزی که در ذهن دارید بنویسید..." :
+              currentLanguage === "ar" ? "اكتب أي شيء في ذهنك..." :
+              currentLanguage === "es" ? "Escribe lo que tengas en mente..." :
+              currentLanguage === "fr" ? "Écrivez ce que vous avez en tête..." :
+              currentLanguage === "tr" ? "Aklınızda ne varsa yazın..." :
+              currentLanguage === "ru" ? "Напишите, что у вас на уме..." :
+              currentLanguage === "zh" ? "写下您心中所想..." :
+              currentLanguage === "ja" ? "心に思うことを書いてください..." :
+              currentLanguage === "ko" ? "마음에 있는 것을 써보세요..." :
+              currentLanguage === "hi" ? "अपने मन की बात लिखें..." :
+              currentLanguage === "pt" ? "Escreva o que está em sua mente..." :
               "Write whatever is on your mind..."
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
-            dir={currentLanguage === "fa" ? "rtl" : "ltr"}
+            dir={currentLanguage === "fa" || currentLanguage === "ar" ? "rtl" : "ltr"}
           />
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -241,10 +256,11 @@ export default function SimpleAISearch() {
       <AnimatePresence>
         {showChat && (
           <motion.div
-            initial={{ opacity: 0, y: 20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: -20, height: 0 }}
-            className="mt-6 bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-700 overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="mt-6 bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-700 overflow-hidden max-w-full"
           >
             {/* Chat Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
@@ -254,10 +270,32 @@ export default function SimpleAISearch() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">
-                    {currentLanguage === "fa" ? "دستیار هوشمند روانشناسی" : "AI Psychology Assistant"}
+                    {currentLanguage === "fa" ? "دستیار هوشمند روانشناسی" :
+                     currentLanguage === "ar" ? "مساعد علم النفس الذكي" :
+                     currentLanguage === "es" ? "Asistente de Psicología IA" :
+                     currentLanguage === "fr" ? "Assistant IA Psychologie" :
+                     currentLanguage === "tr" ? "AI Psikoloji Asistanı" :
+                     currentLanguage === "ru" ? "ИИ Помощник Психолога" :
+                     currentLanguage === "zh" ? "AI心理学助手" :
+                     currentLanguage === "ja" ? "AI心理学アシスタント" :
+                     currentLanguage === "ko" ? "AI 심리학 어시스턴트" :
+                     currentLanguage === "hi" ? "AI मनोविज्ञान सहायक" :
+                     currentLanguage === "pt" ? "Assistente de Psicologia IA" :
+                     "AI Psychology Assistant"}
                   </h3>
                   <p className="text-gray-400 text-sm">
-                    {currentLanguage === "fa" ? "آماده کمک به شما" : "Ready to help"}
+                    {currentLanguage === "fa" ? "آماده کمک به شما" :
+                     currentLanguage === "ar" ? "جاهز للمساعدة" :
+                     currentLanguage === "es" ? "Listo para ayudar" :
+                     currentLanguage === "fr" ? "Prêt à aider" :
+                     currentLanguage === "tr" ? "Yardıma hazır" :
+                     currentLanguage === "ru" ? "Готов помочь" :
+                     currentLanguage === "zh" ? "准备帮助" :
+                     currentLanguage === "ja" ? "お手伝いします" :
+                     currentLanguage === "ko" ? "도움 준비 완료" :
+                     currentLanguage === "hi" ? "मदद के लिए तैयार" :
+                     currentLanguage === "pt" ? "Pronto para ajudar" :
+                     "Ready to help"}
                   </p>
                 </div>
               </div>
@@ -282,7 +320,7 @@ export default function SimpleAISearch() {
             </div>
 
             {/* Chat Messages */}
-            <div className="h-96 overflow-y-auto p-4 space-y-4">
+            <div className="h-64 overflow-y-auto p-4 space-y-4 scroll-smooth">
               {chatMessages.length === 0 && (
                 <div className="text-center py-8">
                   <Brain className="w-12 h-12 text-gray-500 mx-auto mb-4" />
