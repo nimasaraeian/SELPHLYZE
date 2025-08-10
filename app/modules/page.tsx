@@ -155,9 +155,9 @@ export default function ModulesPage() {
                       >
                         {feature}
                       </motion.span>
-                    ))}
-                  </div>
-                </div>
+                ))}
+              </div>
+            </div>
 
                 {/* Action Button */}
                 <Link href={module.path} className="w-full">
@@ -202,7 +202,7 @@ export default function ModulesPage() {
               />
             </motion.div>
           ))}
-        </div>
+          </div>
 
         {/* Bottom CTA */}
         <motion.div
@@ -232,9 +232,9 @@ export default function ModulesPage() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-cyan-400" />
                 <span>Real-time Results</span>
-              </div>
-            </div>
           </div>
+      </div>
+    </div>
         </motion.div>
       </div>
     </main>

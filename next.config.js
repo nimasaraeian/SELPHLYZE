@@ -6,10 +6,6 @@ const nextConfig = {
     // بهینه‌سازی chunk ها
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
-  // کاهش bundle size
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
 }
 
 module.exports = nextConfig

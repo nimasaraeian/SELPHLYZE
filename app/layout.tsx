@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FloatingAIChat from "@/components/FloatingAIChat";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.nimasaraeian.com"),
@@ -27,6 +28,9 @@ export default function RootLayout({
 
         {/* Footer */}
         <Footer />
+
+        {/* Global AI Chat Assistant */}
+        <FloatingAIChat />
       </body>
     </html>
   );
