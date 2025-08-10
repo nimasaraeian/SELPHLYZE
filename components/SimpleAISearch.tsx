@@ -6,49 +6,25 @@ import {
   Send, 
   Bot, 
   User, 
-  ArrowRight, 
   Brain,
-  MessageCircle,
-  Sparkles,
-  Target,
-  Users,
-  TestTube,
-  Heart,
   Clock,
   X,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
   RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface ChatMessage {
   id: string;
-  type: "user" | "ai" | "suggestion";
+  type: "user" | "ai";
   content: string;
   timestamp: Date;
-  suggestions?: {
-    text: string;
-    action: string;
-    icon: React.ComponentType<any>;
-  }[];
 }
 
-interface SearchResult {
-  type: "therapist" | "test" | "module" | "article";
-  title: string;
-  description: string;
-  path: string;
-  relevance: number;
-}
-
-export default function AISearchChatFixed() {
+export default function SimpleAISearch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [currentLanguage, setCurrentLanguage] = useState<"fa" | "en">("en");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -59,25 +35,17 @@ export default function AISearchChatFixed() {
     return persianPattern.test(text) ? "fa" : "en";
   };
 
-  // Update current language when user types
-  const updateLanguage = (text: string) => {
-    const detectedLang = detectLanguage(text);
-    setCurrentLanguage(detectedLang);
-    return detectedLang;
-  };
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  // Load chat history from localStorage
+  // Load chat history
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedChat = localStorage.getItem("aiChatHistory");
+      const savedChat = localStorage.getItem("simpleAiChatHistory");
       if (savedChat) {
         try {
           const parsedMessages = JSON.parse(savedChat);
-          // Convert timestamp strings back to Date objects
           const messagesWithDates = parsedMessages.map((msg: any) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
@@ -94,41 +62,31 @@ export default function AISearchChatFixed() {
   const saveChatHistory = (messages: ChatMessage[]) => {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem("aiChatHistory", JSON.stringify(messages));
+        localStorage.setItem("simpleAiChatHistory", JSON.stringify(messages));
       } catch (error) {
         console.error("Error saving chat history:", error);
       }
     }
   };
 
-  // Simple routing based on keywords
-  const getSmartRouting = (query: string): SearchResult[] => {
-    const results: SearchResult[] = [];
+  // Smart routing suggestions
+  const getRoutingSuggestions = (query: string): string[] => {
+    const suggestions: string[] = [];
     const lowercaseQuery = query.toLowerCase();
     
-    // Check for therapist keywords
-    if (['therapist', 'therapy', 'counselor', 'psychologist', 'تراپیست', 'روانشناس', 'مشاور', 'درمانگر'].some(keyword => lowercaseQuery.includes(keyword))) {
-      results.push({
-        type: "therapist",
-        title: currentLanguage === "fa" ? "یافتن تراپیست‌ها" : "Find Therapists",
-        description: "Connect with professional therapists worldwide",
-        path: "/trappists",
-        relevance: 0.9
-      });
+    if (['therapist', 'therapy', 'counselor', 'تراپیست', 'روانشناس', 'مشاور'].some(keyword => lowercaseQuery.includes(keyword))) {
+      suggestions.push(currentLanguage === "fa" ? "🔗 یافتن تراپیست‌ها" : "🔗 Find Therapists");
     }
-
-    // Check for test keywords
-    if (['test', 'assessment', 'quiz', 'evaluation', 'تست', 'آزمون', 'ارزیابی', 'سنجش'].some(keyword => lowercaseQuery.includes(keyword))) {
-      results.push({
-        type: "test",
-        title: currentLanguage === "fa" ? "تست‌های روانشناسی" : "Psychology Tests",
-        description: "Take AI-powered psychological assessments",
-        path: "/tests",
-        relevance: 0.8
-      });
+    
+    if (['test', 'assessment', 'تست', 'آزمون', 'ارزیابی'].some(keyword => lowercaseQuery.includes(keyword))) {
+      suggestions.push(currentLanguage === "fa" ? "🔗 تست‌های روانشناسی" : "🔗 Psychology Tests");
     }
-
-    return results.sort((a, b) => b.relevance - a.relevance);
+    
+    if (['depression', 'افسردگی', 'غمگین', 'sad'].some(keyword => lowercaseQuery.includes(keyword))) {
+      suggestions.push(currentLanguage === "fa" ? "🔗 تست افسردگی" : "🔗 Depression Test");
+    }
+    
+    return suggestions;
   };
 
   // Generate AI response
@@ -136,16 +94,15 @@ export default function AISearchChatFixed() {
     const language = detectLanguage(userMessage);
     
     try {
-      const prompt = `You are a helpful AI psychology assistant. The user said: "${userMessage}". 
-      Language detected: ${language === "fa" ? "Persian/Farsi" : "English"}. 
+      const prompt = `You are a helpful AI psychology assistant. User said: "${userMessage}". 
+      Language: ${language === "fa" ? "Persian/Farsi" : "English"}. 
       
       Please respond in ${language === "fa" ? "Persian/Farsi" : "English"} with:
-      1. Empathetic acknowledgment of their concern
+      1. Empathetic acknowledgment
       2. Brief helpful information
-      3. Suggestion to take relevant tests or connect with therapists
-      4. Encouraging tone
+      3. Suggestion to take tests or find therapists
       
-      Keep response under 150 words and be supportive.`;
+      Keep response under 100 words and be supportive.`;
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -153,11 +110,16 @@ export default function AISearchChatFixed() {
         body: JSON.stringify({ prompt }),
       });
 
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
       const data = await response.json();
       return data.aiResponse || (language === "fa" 
         ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
         : "I understand your concern. Let me help you find the right resources.");
     } catch (error) {
+      console.error("AI Response Error:", error);
       return currentLanguage === "fa" 
         ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
         : "I understand your concern. Let me help you find the right resources.";
@@ -167,8 +129,8 @@ export default function AISearchChatFixed() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
-    // Detect language and update current language
-    const detectedLanguage = updateLanguage(searchQuery);
+    const detectedLanguage = detectLanguage(searchQuery);
+    setCurrentLanguage(detectedLanguage);
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -182,35 +144,20 @@ export default function AISearchChatFixed() {
     setShowChat(true);
     setIsLoading(true);
 
-    // Get smart routing results
-    const routing = getSmartRouting(searchQuery);
-    setSearchResults(routing);
-
     try {
-      // Generate AI response
       const aiResponse = await generateAIResponse(searchQuery);
+      const suggestions = getRoutingSuggestions(searchQuery);
       
-      // Create suggestions based on routing
-      const suggestions = routing.slice(0, 3).map(result => {
-        let IconComponent;
-        if (result.type === "therapist") IconComponent = Users;
-        else if (result.type === "test") IconComponent = TestTube;
-        else if (result.type === "module") IconComponent = Brain;
-        else IconComponent = Heart;
-        
-        return {
-          text: result.title,
-          action: result.path,
-          icon: IconComponent
-        };
-      });
+      let fullAiResponse = aiResponse;
+      if (suggestions.length > 0) {
+        fullAiResponse += "\n\n" + suggestions.join("\n");
+      }
 
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content: aiResponse,
-        timestamp: new Date(),
-        suggestions: suggestions.length > 0 ? suggestions : undefined
+        content: fullAiResponse,
+        timestamp: new Date()
       };
 
       const finalMessages = [...newMessages, aiMessage];
@@ -218,12 +165,13 @@ export default function AISearchChatFixed() {
       saveChatHistory(finalMessages);
 
     } catch (error) {
+      console.error("Search Error:", error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "ai",
         content: currentLanguage === "fa" 
-          ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
-          : "I understand your concern. Let me help you find the right resources.",
+          ? "متاسفانه مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
+          : "Sorry, something went wrong. Please try again.",
         timestamp: new Date()
       };
       const finalMessages = [...newMessages, errorMessage];
@@ -235,29 +183,13 @@ export default function AISearchChatFixed() {
     setSearchQuery("");
   };
 
-  const handleSuggestionClick = (action: string) => {
-    router.push(action);
-  };
-
   const clearChat = () => {
     setChatMessages([]);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem("aiChatHistory");
+      localStorage.removeItem("simpleAiChatHistory");
     }
     setShowChat(false);
   };
-
-  const quickActions = currentLanguage === "fa" ? [
-    { text: 'احساس افسردگی دارم', query: 'فکر می‌کنم افسردگی دارم' },
-    { text: 'یافتن تراپیست', query: 'نیاز به یافتن تراپیست متخصص دارم' },
-    { text: 'انجام تست', query: 'می‌خوام یک تست روانشناسی انجام بدم' },
-    { text: 'کمک برای اضطراب', query: 'با اضطراب و استرس دست و پنجه نرم می‌کنم' }
-  ] : [
-    { text: 'I feel depressed', query: 'I think I\'m experiencing depression' },
-    { text: 'Find a therapist', query: 'I need to find a professional therapist' },
-    { text: 'Take a test', query: 'I want to take a psychology test' },
-    { text: 'Anxiety help', query: 'I\'m dealing with anxiety and stress' }
-  ];
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -272,9 +204,8 @@ export default function AISearchChatFixed() {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              // Update language as user types
               if (e.target.value.trim()) {
-                updateLanguage(e.target.value);
+                setCurrentLanguage(detectLanguage(e.target.value));
               }
             }}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -326,7 +257,7 @@ export default function AISearchChatFixed() {
                     {currentLanguage === "fa" ? "دستیار هوشمند روانشناسی" : "AI Psychology Assistant"}
                   </h3>
                   <p className="text-gray-400 text-sm">
-                    {currentLanguage === "fa" ? "برای کمک به سفر سلامت روان شما اینجا هستم" : "Here to help with your mental health journey"}
+                    {currentLanguage === "fa" ? "آماده کمک به شما" : "Ready to help"}
                   </p>
                 </div>
               </div>
@@ -356,10 +287,7 @@ export default function AISearchChatFixed() {
                 <div className="text-center py-8">
                   <Brain className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                   <p className="text-gray-400">
-                    {currentLanguage === "fa" ? "درباره نگرانی‌های سلامت روان خود صحبت کنید" : "Start a conversation about your mental health concerns"}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    {currentLanguage === "fa" ? "من اینجا هستم تا گوش دهم و شما را به منابع مناسب هدایت کنم" : "I'm here to listen and guide you to the right resources"}
+                    {currentLanguage === "fa" ? "سوال یا نگرانی خود را بنویسید" : "Write your question or concern"}
                   </p>
                 </div>
               )}
@@ -393,30 +321,6 @@ export default function AISearchChatFixed() {
                         }`}>
                           <p className="whitespace-pre-wrap">{message.content}</p>
                         </div>
-                        
-                        {/* AI Suggestions */}
-                        {message.suggestions && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-gray-400 text-sm">
-                              {currentLanguage === "fa" ? "اقدامات پیشنهادی:" : "Suggested actions:"}
-                            </p>
-                            {message.suggestions.map((suggestion, index) => (
-                              <motion.button
-                                key={index}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleSuggestionClick(suggestion.action)}
-                                className="flex items-center gap-2 w-full p-3 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-left transition-colors group"
-                              >
-                                <suggestion.icon className="w-4 h-4 text-teal-400" />
-                                <span className="text-white group-hover:text-teal-300 transition-colors">
-                                  {suggestion.text}
-                                </span>
-                                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-teal-400 ml-auto transition-colors" />
-                              </motion.button>
-                            ))}
-                          </div>
-                        )}
                         
                         <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                           <Clock className="w-3 h-3" />
@@ -456,7 +360,7 @@ export default function AISearchChatFixed() {
                           className="w-2 h-2 bg-teal-400 rounded-full"
                         />
                         <span className="text-gray-400 text-sm ml-2">
-                          {currentLanguage === "fa" ? "AI در حال فکر کردن..." : "AI is thinking..."}
+                          {currentLanguage === "fa" ? "در حال پردازش..." : "Processing..."}
                         </span>
                       </div>
                     </div>
@@ -465,26 +369,6 @@ export default function AISearchChatFixed() {
               )}
 
               <div ref={chatEndRef} />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="p-4 border-t border-slate-700">
-              <div className="flex flex-wrap gap-2">
-                {quickActions.map((action, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setSearchQuery(action.query);
-                      setTimeout(handleSearch, 100);
-                    }}
-                    className="px-3 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-gray-300 hover:text-white rounded-lg text-sm transition-colors"
-                  >
-                    {action.text}
-                  </motion.button>
-                ))}
-              </div>
             </div>
           </motion.div>
         )}

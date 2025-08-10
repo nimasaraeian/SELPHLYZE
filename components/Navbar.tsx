@@ -1,19 +1,257 @@
+"use client";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Menu, 
+  X, 
+  Home, 
+  Brain, 
+  TestTube, 
+  Users, 
+  User, 
+  Mail,
+  Sparkles,
+  ChevronDown
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+
+const navItems = [
+  { name: "Home", href: "/", icon: Home },
+  { name: "Tests", href: "/tests", icon: TestTube },
+  { name: "Psychology", href: "/psychology", icon: Brain },
+  { name: "Modules", href: "/modules", icon: Sparkles },
+  { name: "Trappists", href: "/trappists", icon: Users },
+  { name: "Profile", href: "/profile", icon: User },
+  { name: "Contact", href: "/contact", icon: Mail },
+];
 
 export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="w-full fixed top-0 z-50 bg-black/30 backdrop-blur-md border-b border-gray-800">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-center items-center">
-        <ul className="flex flex-wrap gap-8 text-lg font-medium text-gray-300">
-          <li><Link href="/" className="hover:text-teal-400 transition-colors">Home</Link></li>
-          <li><Link href="/tests" className="hover:text-teal-400 transition-colors">Tests</Link></li>
-          <li><Link href="/psychology" className="hover:text-teal-400 transition-colors">Psychology</Link></li>
-          <li><Link href="/modules" className="hover:text-teal-400 transition-colors">Modules</Link></li>
-          <li><Link href="/trappists" className="hover:text-teal-400 transition-colors">Trappists</Link></li>
-          <li><Link href="/profile" className="hover:text-teal-400 transition-colors">Profile</Link></li>
-          <li><Link href="/contact" className="hover:text-teal-400 transition-colors">Contact</Link></li>
-        </ul>
-      </div>
-    </nav>
+    <>
+      {/* Desktop Navbar */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className={`w-full fixed top-0 z-50 transition-all duration-500 ${
+          scrolled 
+            ? "glass-dark shadow-2xl py-3" 
+            : "bg-transparent py-4"
+        }`}
+      >
+        <div className="container-fluid">
+          <div className="flex justify-between items-center">
+            
+            {/* Logo */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-3"
+            >
+              <Link href="/" className="flex items-center gap-3 group">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold text-gradient-psyche">
+                  SELPHLYZE
+                </span>
+              </Link>
+            </motion.div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-2">
+              {navItems.map((item, index) => {
+                const isActive = pathname === item.href;
+                const IconComponent = item.icon;
+                
+                return (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`
+                        relative px-6 py-3 rounded-xl font-medium text-sm
+                        transition-all duration-300 group
+                        ${isActive 
+                          ? "text-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
+                          : "text-gray-300 hover:text-white"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="w-4 h-4" />
+                        <span>{item.name}</span>
+                      </div>
+                      
+                      {/* Active indicator */}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute inset-0 bg-gradient-to-r from-teal-500/10 via-blue-500/10 to-purple-500/10 rounded-xl border border-teal-400/20"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      
+                      {/* Hover effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-blue-500/5 to-purple-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden p-3 rounded-xl glass border border-white/20 text-white hover:bg-white/10 transition-all duration-300"
+            >
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setIsOpen(false)}
+            />
+            
+            {/* Mobile Menu */}
+            <motion.div
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-80 max-w-[85vw] glass-dark border-l border-white/20 z-50 lg:hidden"
+            >
+              <div className="p-6">
+                
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 flex items-center justify-center">
+                      <Brain className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-xl font-bold text-gradient-psyche">
+                      SELPHLYZE
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Mobile Navigation */}
+                <nav className="space-y-2">
+                  {navItems.map((item, index) => {
+                    const isActive = pathname === item.href;
+                    const IconComponent = item.icon;
+                    
+                    return (
+                      <motion.div
+                        key={item.name}
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                      >
+                        <Link
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className={`
+                            flex items-center gap-4 px-4 py-4 rounded-xl font-medium
+                            transition-all duration-300 group
+                            ${isActive 
+                              ? "text-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                            }
+                          `}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                          <span className="text-lg">{item.name}</span>
+                          
+                          {isActive && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="ml-auto w-2 h-2 bg-teal-400 rounded-full"
+                            />
+                          )}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </nav>
+
+                {/* Mobile Footer */}
+                <div className="mt-8 pt-6 border-t border-white/10">
+                  <p className="text-sm text-gray-400 text-center">
+                    AI-Powered Psychology Platform
+                  </p>
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-gray-500">AI Assistant Online</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
