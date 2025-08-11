@@ -16,7 +16,7 @@ export default function BrainTemplate() {
       const profile = localStorage.getItem("aiUserProfile");
 
       if (!pp && !general) {
-        setError(language === 'fa' ? '❌ داده‌ای برای تحلیل یافت نشد.' : language === 'ar' ? '❌ لا توجد بيانات للتحليل.' : '❌ No response data found.');
+        setError(language === 'fa' ? '❌ داده‌ای برای تحلیل یافت نشد.' : language === 'es' ? '❌ No hay datos para analizar.' : '❌ No response data found.');
         setLoading(false);
         return;
       }
@@ -44,11 +44,11 @@ General Personality Test (if any): ${general || '{}'}
           setLoading(false);
         })
         .catch(() => {
-          setError(language === 'fa' ? '❌ خطا در ارتباط با هوش مصنوعی' : language === 'ar' ? '❌ خطأ في الاتصال بالذكاء الاصطناعي' : '❌ Error contacting AI');
+          setError(language === 'fa' ? '❌ خطا در ارتباط با هوش مصنوعی' : language === 'es' ? '❌ Error al contactar con la IA' : '❌ Error contacting AI');
           setLoading(false);
         });
     } catch {
-      setError(language === 'fa' ? '❌ خطای داخلی' : language === 'ar' ? '❌ خطأ داخلي' : '❌ Internal error');
+      setError(language === 'fa' ? '❌ خطای داخلی' : language === 'es' ? '❌ Error interno' : '❌ Internal error');
       setLoading(false);
     }
   }, [language]);
