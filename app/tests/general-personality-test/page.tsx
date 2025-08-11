@@ -553,19 +553,19 @@ export default function GeneralPersonalityTestPage() {
         submit: 'ارسال پاسخ‌ها',
       } as const;
     }
-    if (language === 'zh') {
+    if (language === 'es') {
       return {
-        title: 'Selphlyze 人格测试 – 35 题',
-        likertLabel: '李克特量表（1–非常不同意 … 7–非常同意）',
-        legend1: '1 = 非常不同意',
-        legend2: '2 = 不同意',
-        legend3: '3 = 有点不同意',
-        legend4: '4 = 中立',
-        legend5: '5 = 有点同意',
-        legend6: '6 = 同意',
-        legend7: '7 = 非常同意',
-        openPlaceholder: '写下你的答案（至少 10 个字符）。',
-        submit: '提交答案',
+        title: 'Test de Personalidad Selphlyze – 35 Preguntas',
+        likertLabel: 'Likert (1–Totalmente en desacuerdo … 7–Totalmente de acuerdo)',
+        legend1: '1 = Totalmente en desacuerdo',
+        legend2: '2 = En desacuerdo',
+        legend3: '3 = Algo en desacuerdo',
+        legend4: '4 = Neutral',
+        legend5: '5 = Algo de acuerdo',
+        legend6: '6 = De acuerdo',
+        legend7: '7 = Totalmente de acuerdo',
+        openPlaceholder: 'Escribe tu respuesta (mínimo 10 caracteres).',
+        submit: 'Enviar respuestas',
       } as const;
     }
     return {
