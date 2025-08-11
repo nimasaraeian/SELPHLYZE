@@ -302,19 +302,7 @@ export default function AISearchChat() {
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             placeholder={
               currentLanguage === "fa" ? "هر چیزی که در ذهن دارید بنویسید..." :
-              currentLanguage === "ar" ? "اكتب أي شيء يخطر ببالك..." :
               currentLanguage === "es" ? "Escribe lo que tengas en mente..." :
-              currentLanguage === "fr" ? "Écrivez ce qui vous passe par l'esprit..." :
-              currentLanguage === "de" ? "Schreiben Sie, was Ihnen durch den Kopf geht..." :
-              currentLanguage === "it" ? "Scrivi quello che hai in mente..." :
-              currentLanguage === "ru" ? "Напишите, что у вас на уме..." :
-              currentLanguage === "zh" ? "写下你心中所想..." :
-              currentLanguage === "ja" ? "心に思っていることを書いてください..." :
-              currentLanguage === "ko" ? "마음에 있는 것을 써보세요..." :
-              currentLanguage === "hi" ? "जो कुछ भी आपके मन में है वह लिखें..." :
-              currentLanguage === "tr" ? "Aklınızdaki her şeyi yazın..." :
-              currentLanguage === "pt" ? "Escreva o que está em sua mente..." :
-              currentLanguage === "nl" ? "Schrijf op wat er in je gedachten is..." :
               "Write whatever is on your mind..."
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
@@ -359,36 +347,12 @@ export default function AISearchChat() {
                 <div>
                   <h3 className="text-white font-medium">
                     {currentLanguage === "fa" ? "دستیار هوشمند روانشناسی" :
-                     currentLanguage === "ar" ? "مساعد علم النفس الذكي" :
                      currentLanguage === "es" ? "Asistente de Psicología IA" :
-                     currentLanguage === "fr" ? "Assistant IA en Psychologie" :
-                     currentLanguage === "de" ? "KI-Psychologie-Assistent" :
-                     currentLanguage === "it" ? "Assistente IA di Psicologia" :
-                     currentLanguage === "ru" ? "ИИ-Помощник по Психологии" :
-                     currentLanguage === "zh" ? "AI心理学助手" :
-                     currentLanguage === "ja" ? "AI心理学アシスタント" :
-                     currentLanguage === "ko" ? "AI 심리학 어시스턴트" :
-                     currentLanguage === "hi" ? "AI मनोविज्ञान सहायक" :
-                     currentLanguage === "tr" ? "AI Psikoloji Asistanı" :
-                     currentLanguage === "pt" ? "Assistente de Psicologia IA" :
-                     currentLanguage === "nl" ? "AI Psychologie Assistent" :
                      "AI Psychology Assistant"}
                   </h3>
                   <p className="text-gray-400 text-sm">
                     {currentLanguage === "fa" ? "برای کمک به سفر سلامت روان شما اینجا هستم" :
-                     currentLanguage === "ar" ? "هنا لمساعدتك في رحلة صحتك النفسية" :
                      currentLanguage === "es" ? "Aquí para ayudarte en tu viaje de salud mental" :
-                     currentLanguage === "fr" ? "Ici pour vous aider dans votre parcours de santé mentale" :
-                     currentLanguage === "de" ? "Hier, um Ihnen auf Ihrer mentalen Gesundheitsreise zu helfen" :
-                     currentLanguage === "it" ? "Qui per aiutarti nel tuo percorso di salute mentale" :
-                     currentLanguage === "ru" ? "Здесь, чтобы помочь вам в вашем путешествии к психическому здоровью" :
-                     currentLanguage === "zh" ? "在这里帮助您的心理健康之旅" :
-                     currentLanguage === "ja" ? "あなたのメンタルヘルスの旅をサポートします" :
-                     currentLanguage === "ko" ? "당신의 정신 건강 여정을 도와드리기 위해 여기 있습니다" :
-                     currentLanguage === "hi" ? "आपकी मानसिक स्वास्थ्य यात्रा में मदद के लिए यहाँ हूँ" :
-                     currentLanguage === "tr" ? "Ruh sağlığı yolculuğunuzda size yardımcı olmak için buradayım" :
-                     currentLanguage === "pt" ? "Aqui para ajudá-lo em sua jornada de saúde mental" :
-                     currentLanguage === "nl" ? "Hier om je te helpen op je mentale gezondheidsreis" :
                      "Here to help with your mental health journey"}
                   </p>
                 </div>
