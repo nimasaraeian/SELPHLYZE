@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import StartConfirm from "@/components/StartConfirm";
 import { useLanguage } from "@/providers/LanguageProvider";
+import type { AppLanguage } from "@/providers/LanguageProvider";
 import { 
   Brain, 
   Users, 
