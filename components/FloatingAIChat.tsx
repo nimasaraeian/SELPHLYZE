@@ -585,7 +585,6 @@ export default function FloatingAIChat() {
                         "Type your message..."
                       }
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 text-sm focus:border-teal-500 focus:outline-none"
-                      dir={currentLanguage === "fa" || currentLanguage === "ar" ? "rtl" : "ltr"}
                     />
                     <motion.button
                       whileHover={{ scale: 1.05 }}

@@ -38,13 +38,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  // Update <html> lang/dir
+  // Update <html> lang only (do not change page direction)
   useEffect(() => {
     if (typeof document === "undefined") return;
     const html = document.documentElement;
     html.lang = language;
-    const isRtl = language === "ar" || language === "fa";
-    html.dir = isRtl ? "rtl" : "ltr";
   }, [language]);
 
   const isRtl = useMemo(() => language === "ar" || language === "fa", [language]);

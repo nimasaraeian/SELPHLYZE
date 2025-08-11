@@ -444,7 +444,6 @@ export default function SimpleAISearch() {
                   )
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
-            dir={currentLanguage === "fa" || currentLanguage === "ar" ? "rtl" : "ltr"}
           />
           <motion.button
             whileHover={{ scale: 1.05 }}
