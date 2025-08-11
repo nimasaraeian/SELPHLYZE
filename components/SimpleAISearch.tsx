@@ -97,10 +97,25 @@ export default function SimpleAISearch() {
   // Generate AI response
   const generateAIResponse = async (userMessage: string, language: SupportedLanguage): Promise<string> => {
     try {
-      const prompt = `You are a helpful AI psychology assistant. User said: "${userMessage}". 
-      Language: ${language === "fa" ? "Persian/Farsi" : "English"}. 
+      const languageNames: Record<SupportedLanguage, string> = {
+        en: "English",
+        fa: "Persian/Farsi",
+        ar: "Arabic",
+        tr: "Turkish",
+        es: "Spanish",
+        fr: "French",
+        ru: "Russian",
+        zh: "Chinese",
+        ja: "Japanese",
+        ko: "Korean",
+        hi: "Hindi",
+        pt: "Portuguese",
+      };
+
+      const prompt = `You are a helpful AI psychology assistant. User said: "${userMessage}".
+      Language: ${languageNames[language]}.
       
-      Please respond in ${language === "fa" ? "Persian/Farsi" : "English"} with:
+      Please respond in ${languageNames[language]} with:
       1. Empathetic acknowledgment
       2. Brief helpful information
       3. Suggestion to take tests or find therapists
@@ -118,14 +133,38 @@ export default function SimpleAISearch() {
       }
 
       const data = await response.json();
-      return data.aiResponse || (language === "fa" 
-        ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
-        : "I understand your concern. Let me help you find the right resources.");
+      const fallbacks: Record<SupportedLanguage, string> = {
+        fa: "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم.",
+        ar: "أنا أتفهم قلقك. دعني أساعدك في العثور على الموارد المناسبة.",
+        tr: "Endişeni anlıyorum. Sana uygun kaynakları bulmana yardımcı olayım.",
+        es: "Entiendo tu preocupación. Déjame ayudarte a encontrar los recursos adecuados.",
+        fr: "Je comprends votre inquiétude. Laissez-moi vous aider à trouver les bonnes ressources.",
+        ru: "Я понимаю вашу обеспокоенность. Позвольте помочь найти подходящие ресурсы.",
+        zh: "我理解你的担忧。让我帮助你找到合适的资源。",
+        ja: "ご心配を理解しています。適切なリソースを見つけるお手伝いをします。",
+        ko: "걱정하시는 마음 이해합니다. 적절한 자료를 찾을 수 있도록 도와드릴게요.",
+        hi: "मैं आपकी चिंता समझता हूँ। मैं आपको सही संसाधन ढूँढने में मदद करता हूँ।",
+        pt: "Entendo sua preocupação. Deixe-me ajudar a encontrar os recursos certos.",
+        en: "I understand your concern. Let me help you find the right resources.",
+      };
+      return data.aiResponse || fallbacks[language];
     } catch (error) {
       console.error("AI Response Error:", error);
-      return language === "fa" 
-        ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
-        : "I understand your concern. Let me help you find the right resources.";
+      const fallbacks: Record<SupportedLanguage, string> = {
+        fa: "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم.",
+        ar: "أنا أتفهم قلقك. دعني أساعدك في العثور على الموارد المناسبة.",
+        tr: "Endişeni anlıyorum. Sana uygun kaynakları bulmana yardımcı olayım.",
+        es: "Entiendo tu preocupación. Déjame ayudarte a encontrar los recursos adecuados.",
+        fr: "Je comprends votre inquiétude. Laissez-moi vous aider à trouver les bonnes ressources.",
+        ru: "Я понимаю вашу обеспокоенность. Позвольте помочь найти подходящие ресурсы.",
+        zh: "我理解你的担忧。让我帮助你找到合适的资源。",
+        ja: "ご心配を理解しています。適切なリソースを見つけるお手伝いをします。",
+        ko: "걱정하시는 마음 이해합니다. 적절한 자료를 찾을 수 있도록 도와드릴게요.",
+        hi: "मैं आपकी चिंता समझता हूँ। मैं आपको सही संसाधन ढूँढने में मदद करता हूँ।",
+        pt: "Entendo sua preocupação. Deixe-me ajudar a encontrar os recursos certos.",
+        en: "I understand your concern. Let me help you find the right resources.",
+      };
+      return fallbacks[language];
     }
   };
 
