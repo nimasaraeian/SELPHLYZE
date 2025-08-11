@@ -57,3 +57,7 @@ export function useLanguage(): LanguageContextValue {
   if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");
   return ctx;
 }
+
+export function normalizeToAppLanguage(input: string): AppLanguage {
+  return input === "fa" ? "fa" : input === "es" ? "es" : "en";
+}

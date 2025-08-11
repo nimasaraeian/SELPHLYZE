@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { detectLanguage, getTranslation, getKeywords, getQuickActions, SupportedLanguage } from "@/utils/multilingual";
-import { useLanguage } from "@/providers/LanguageProvider";
+import { useLanguage, normalizeToAppLanguage } from "@/providers/LanguageProvider";
 
 interface ChatMessage {
   id: string;
@@ -107,7 +107,7 @@ export default function FloatingAIChat() {
   const updateLanguage = (text: string) => {
     const detectedLang = detectLanguage(text);
     setCurrentLanguage(detectedLang);
-    setGlobalLanguage(detectedLang);
+    setGlobalLanguage(normalizeToAppLanguage(detectedLang));
     return detectedLang;
   };
 
