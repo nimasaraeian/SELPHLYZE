@@ -54,7 +54,7 @@ General Personality Test (if any): ${general || '{}'}
   }, [language]);
 
   if (loading)
-    return <div className="text-center p-10">{language === 'fa' ? '⏳ در حال تحلیل...' : language === 'ar' ? '⏳ جارٍ التحليل...' : '⏳ Analyzing...'}</div>;
+    return <div className="text-center p-10">{language === 'fa' ? '⏳ در حال تحلیل...' : language === 'es' ? '⏳ Analizando...' : '⏳ Analyzing...'}</div>;
 
   if (error)
     return <div className="text-red-500 p-10 text-center">{error}</div>;
@@ -64,7 +64,7 @@ General Personality Test (if any): ${general || '{}'}
     return (
       <div className="p-10">
         <h2 className="text-2xl font-bold mb-4">
-          {language === 'fa' ? '🧠 نتایج تحلیل' : language === 'ar' ? '🧠 نتائج التحليل' : '🧠 Analysis Results'}
+          {language === 'fa' ? '🧠 نتایج تحلیل' : language === 'es' ? '🧠 Resultados del análisis' : '🧠 Analysis Results'}
         </h2>
         <div className="prose prose-invert max-w-none whitespace-pre-wrap">{aiText}</div>
       </div>
@@ -72,11 +72,11 @@ General Personality Test (if any): ${general || '{}'}
   }
 
   if (!data?.sections || !Array.isArray(data.sections))
-    return <div className="text-center p-10">{language === 'fa' ? 'فرمت پاسخ نامعتبر است.' : language === 'ar' ? 'تنسيق الاستجابة غير صالح.' : 'Invalid response format.'}</div>;
+    return <div className="text-center p-10">{language === 'fa' ? 'فرمت پاسخ نامعتبر است.' : language === 'es' ? 'Formato de respuesta no válido.' : 'Invalid response format.'}</div>;
 
   return (
     <div className="p-10">
-      <h2 className="text-2xl font-bold mb-4">{language === 'fa' ? '🧠 نتایج تحلیل' : language === 'ar' ? '🧠 نتائج التحليل' : '🧠 Analysis Results'}</h2>
+      <h2 className="text-2xl font-bold mb-4">{language === 'fa' ? '🧠 نتایج تحلیل' : language === 'es' ? '🧠 Resultados del análisis' : '🧠 Analysis Results'}</h2>
       <ul className="grid grid-cols-2 gap-4">
         {data.sections.map((s: any, index: number) => (
           <li
@@ -92,7 +92,7 @@ General Personality Test (if any): ${general || '{}'}
       </ul>
 
       <div className="mt-8">
-        <h3 className="text-xl font-bold mb-2">{language === 'fa' ? '📋 خلاصه' : language === 'ar' ? '📋 الملخص' : '📋 Summary'}</h3>
+        <h3 className="text-xl font-bold mb-2">{language === 'fa' ? '📋 خلاصه' : language === 'es' ? '📋 Resumen' : '📋 Summary'}</h3>
         <ul className="list-disc pl-5">
           {data.summary?.map((s: string, idx: number) => (
             <li key={idx}>{s}</li>

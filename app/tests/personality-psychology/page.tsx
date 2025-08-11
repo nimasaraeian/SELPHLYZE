@@ -105,7 +105,7 @@ export default function PersonalityTestPage() {
         disabled={Object.keys(answers).length < questions.length}
         className="mt-10 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-2xl shadow-2xl hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
       >
-        {language === 'fa' ? 'تحلیل شخصیت من' : language === 'ar' ? 'حلّل شخصيتي' : language === 'tr' ? 'Kişiliğimi Analiz Et' : language === 'es' ? 'Analizar Mi Personalidad' : language === 'fr' ? 'Analyser Ma Personnalité' : language === 'ru' ? 'Анализ Моей Личности' : language === 'zh' ? '分析我的个性' : language === 'ja' ? '私の性格を分析' : language === 'ko' ? '나의 성격 분석' : language === 'hi' ? 'मेरी व्यक्तित्व का विश्लेषण' : language === 'pt' ? 'Analisar Minha Personalidade' : 'Analyze My Personality'}
+        {language === 'fa' ? 'تحلیل شخصیت من' : language === 'es' ? 'Analizar Mi Personalidad' : 'Analyze My Personality'}
       </button>
     </div>
   );
