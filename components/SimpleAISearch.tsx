@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { detectLanguage, SupportedLanguage, SUPPORTED_LANGUAGES } from "@/utils/multilingual";
-import { useLanguage } from "@/providers/LanguageProvider";
+import { useLanguage, normalizeToAppLanguage } from "@/providers/LanguageProvider";
 
 interface ChatMessage {
   id: string;
@@ -89,7 +89,7 @@ export default function SimpleAISearch() {
           if (p.language) {
             setPreferredLanguage(p.language as SupportedLanguage);
             setCurrentLanguage(p.language as SupportedLanguage);
-            setGlobalLanguage(p.language as SupportedLanguage);
+            setGlobalLanguage(normalizeToAppLanguage(p.language as SupportedLanguage));
           }
 
           if (!(hasDisplayName && hasAgeRange && hasGender && hasLanguage)) {
@@ -241,7 +241,7 @@ export default function SimpleAISearch() {
     const detectedLanguage = detectLanguage(searchQuery);
     const languageToUse: SupportedLanguage = preferredLanguage || globalLanguage || detectedLanguage;
     setCurrentLanguage(languageToUse);
-    setGlobalLanguage(languageToUse);
+    setGlobalLanguage(normalizeToAppLanguage(languageToUse));
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -422,7 +422,7 @@ export default function SimpleAISearch() {
                       }
                     }
                     setCurrentLanguage(preferredLanguage);
-                    setGlobalLanguage(preferredLanguage);
+                    setGlobalLanguage(normalizeToAppLanguage(preferredLanguage));
                     setShowProfileModal(false);
                   }}
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
