@@ -327,7 +327,7 @@ export default function FloatingAIChat() {
         : "en";
       
       setCurrentLanguage(detectedLang);
-      setGlobalLanguage(detectedLang);
+      setGlobalLanguage(normalizeToAppLanguage(detectedLang));
       
           const greetingMessage: ChatMessage = {
         id: "greeting",
