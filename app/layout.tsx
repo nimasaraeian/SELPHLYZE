@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingAIChat from "@/components/FloatingAIChat";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.nimasaraeian.com"),
@@ -20,17 +21,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white font-sans min-h-screen flex flex-col">
-        {/* Navbar */}
-        <Navbar />
+        <LanguageProvider>
+          {/* Navbar */}
+          <Navbar />
 
-        {/* Main Content */}
-        <main className="flex-1 pt-16">{children}</main>
+          {/* Main Content */}
+          <main className="flex-1 pt-16">{children}</main>
 
-        {/* Footer */}
-        <Footer />
+          {/* Footer */}
+          <Footer />
 
-        {/* Global AI Chat Assistant */}
-        <FloatingAIChat />
+          {/* Global AI Chat Assistant */}
+          <FloatingAIChat />
+        </LanguageProvider>
       </body>
     </html>
   );

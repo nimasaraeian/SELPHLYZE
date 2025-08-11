@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { detectLanguage, getTranslation, getKeywords, getQuickActions, SupportedLanguage } from "@/utils/multilingual";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ChatMessage {
   id: string;
@@ -36,12 +37,13 @@ interface ChatMessage {
 }
 
 export default function FloatingAIChat() {
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>("en");
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(globalLanguage);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -70,6 +72,11 @@ export default function FloatingAIChat() {
       }
     }
   }, []);
+
+  // Sync currentLanguage with global language
+  useEffect(() => {
+    setCurrentLanguage(globalLanguage);
+  }, [globalLanguage]);
 
   // Save chat history
   const saveChatHistory = (newMessages: ChatMessage[]) => {
@@ -100,6 +107,7 @@ export default function FloatingAIChat() {
   const updateLanguage = (text: string) => {
     const detectedLang = detectLanguage(text);
     setCurrentLanguage(detectedLang);
+    setGlobalLanguage(detectedLang);
     return detectedLang;
   };
 
@@ -206,10 +214,19 @@ export default function FloatingAIChat() {
     const suggestions = getContextualRouting(userMessage, language);
     
     try {
-      const languageNames = {
-        fa: "Persian/Farsi", en: "English", ar: "Arabic", es: "Spanish", fr: "French",
-        de: "German", it: "Italian", ru: "Russian", zh: "Chinese", ja: "Japanese",
-        ko: "Korean", hi: "Hindi", tr: "Turkish", pt: "Portuguese", nl: "Dutch"
+      const languageNames: Record<SupportedLanguage, string> = {
+        en: "English",
+        fr: "French",
+        es: "Spanish",
+        pt: "Portuguese",
+        ko: "Korean",
+        ja: "Japanese",
+        zh: "Chinese",
+        ar: "Arabic",
+        fa: "Persian/Farsi",
+        tr: "Turkish",
+        ru: "Russian",
+        hi: "Hindi",
       };
 
       const prompt = `You are an AI psychology assistant. User is currently on the ${currentContext} and said: "${userMessage}". 
@@ -310,8 +327,9 @@ export default function FloatingAIChat() {
         : "en";
       
       setCurrentLanguage(detectedLang);
+      setGlobalLanguage(detectedLang);
       
-      const greetingMessage: ChatMessage = {
+          const greetingMessage: ChatMessage = {
         id: "greeting",
         type: "ai",
         content: getTranslation("aiGreeting", detectedLang),
@@ -319,7 +337,7 @@ export default function FloatingAIChat() {
         suggestions: [
           { text: getTranslation("tests", detectedLang, "sections"), action: "/tests" },
           { text: getTranslation("therapists", detectedLang, "sections"), action: "/therapists" },
-          { text: "AI Modules", action: "/modules" }
+              { text: getTranslation("modules", detectedLang, "sections"), action: "/modules" }
         ]
       };
       
@@ -556,17 +574,14 @@ export default function FloatingAIChat() {
                         currentLanguage === "fa" ? "پیام خود را تایپ کنید..." :
                         currentLanguage === "ar" ? "اكتب رسالتك..." :
                         currentLanguage === "es" ? "Escribe tu mensaje..." :
-                        currentLanguage === "fr" ? "Tapez votre message..." :
-                        currentLanguage === "de" ? "Geben Sie Ihre Nachricht ein..." :
-                        currentLanguage === "it" ? "Scrivi il tuo messaggio..." :
+                      currentLanguage === "fr" ? "Tapez votre message..." :
                         currentLanguage === "ru" ? "Введите ваше сообщение..." :
                         currentLanguage === "zh" ? "输入您的消息..." :
                         currentLanguage === "ja" ? "メッセージを入力してください..." :
                         currentLanguage === "ko" ? "메시지를 입력하세요..." :
                         currentLanguage === "hi" ? "अपना संदेश टाइप करें..." :
                         currentLanguage === "tr" ? "Mesajınızı yazın..." :
-                        currentLanguage === "pt" ? "Digite sua mensagem..." :
-                        currentLanguage === "nl" ? "Typ je bericht..." :
+                      currentLanguage === "pt" ? "Digite sua mensagem..." :
                         "Type your message..."
                       }
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 text-sm focus:border-teal-500 focus:outline-none"

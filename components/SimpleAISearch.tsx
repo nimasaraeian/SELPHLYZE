@@ -12,7 +12,8 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { detectLanguage, SupportedLanguage } from "@/utils/multilingual";
+import { detectLanguage, SupportedLanguage, SUPPORTED_LANGUAGES } from "@/utils/multilingual";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ChatMessage {
   id: string;
@@ -22,11 +23,17 @@ interface ChatMessage {
 }
 
 export default function SimpleAISearch() {
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>("en");
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(globalLanguage);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [ageRange, setAgeRange] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [preferredLanguage, setPreferredLanguage] = useState<SupportedLanguage>("en");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -46,8 +53,14 @@ export default function SimpleAISearch() {
 
   // Load chat history
   useEffect(() => {
+    setCurrentLanguage(globalLanguage);
+  }, [globalLanguage]);
+
+  // Load chat history
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedChat = localStorage.getItem("simpleAiChatHistory");
+      const savedProfile = localStorage.getItem("aiUserProfile");
       if (savedChat) {
         try {
           const parsedMessages = JSON.parse(savedChat);
@@ -59,6 +72,22 @@ export default function SimpleAISearch() {
         } catch (error) {
           console.error("Error loading chat history:", error);
         }
+      }
+      if (savedProfile) {
+        try {
+          const p = JSON.parse(savedProfile);
+          setDisplayName(p.displayName || "");
+          setAgeRange(p.ageRange || "");
+          setGender(p.gender || "");
+          if (p.language) {
+            setPreferredLanguage(p.language as SupportedLanguage);
+            setCurrentLanguage(p.language as SupportedLanguage);
+            setGlobalLanguage(p.language as SupportedLanguage);
+          }
+        } catch {}
+      } else {
+        // Open modal to collect profile before first search
+        setShowProfileModal(true);
       }
     }
   }, []);
@@ -112,7 +141,14 @@ export default function SimpleAISearch() {
         pt: "Portuguese",
       };
 
-      const prompt = `You are a helpful AI psychology assistant. User said: "${userMessage}".
+      const prompt = `You are a helpful AI psychology assistant.
+      User profile context: {
+        name: ${displayName || 'Guest'},
+        ageRange: ${ageRange || 'unknown'},
+        gender: ${gender || 'unspecified'}
+      }
+      Address the user by name (${displayName || 'Friend'}) in the first sentence.
+      User said: "${userMessage}".
       Language: ${languageNames[language]}.
       
       Please respond in ${languageNames[language]} with:
@@ -171,8 +207,17 @@ export default function SimpleAISearch() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
+    // Ensure profile is collected before search
+    if (!displayName || !ageRange || !gender || !preferredLanguage) {
+      setShowProfileModal(true);
+      return;
+    }
+
+    // Prefer user's chosen language over detection
     const detectedLanguage = detectLanguage(searchQuery);
-    setCurrentLanguage(detectedLanguage);
+    const languageToUse: SupportedLanguage = preferredLanguage || globalLanguage || detectedLanguage;
+    setCurrentLanguage(languageToUse);
+    setGlobalLanguage(languageToUse);
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -187,7 +232,7 @@ export default function SimpleAISearch() {
     setIsLoading(true);
 
     try {
-      const aiResponse = await generateAIResponse(searchQuery, detectedLanguage);
+      const aiResponse = await generateAIResponse(searchQuery, languageToUse);
       const suggestions = getRoutingSuggestions(searchQuery);
       
       let fullAiResponse = aiResponse;
@@ -235,6 +280,122 @@ export default function SimpleAISearch() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+
+      {/* Profile Modal */}
+      <AnimatePresence>
+        {showProfileModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-teal-500 to-blue-600 p-6 text-white">
+                <h3 className="text-xl font-bold">Personalize your AI</h3>
+                <p className="opacity-90 text-sm">Please provide a few details so we can tailor guidance.</p>
+              </div>
+              <div className="p-6 space-y-4 text-gray-800">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Display Name</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Enter a name you'd like me to use"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Age Range</label>
+                    <select
+                      value={ageRange}
+                      onChange={(e) => setAgeRange(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                    >
+                      <option value="">Select age range</option>
+                      <option value="15-20">15 - 20</option>
+                      <option value="20-25">20 - 25</option>
+                      <option value="25-30">25 - 30</option>
+                      <option value="30-35">30 - 35</option>
+                      <option value="35-40">35 - 40</option>
+                      <option value="40-45">40 - 45</option>
+                      <option value="45-50">45 - 50</option>
+                      <option value="50-60">50 - 60</option>
+                      <option value="60-70">60 - 70</option>
+                      <option value="70-80">70 - 80</option>
+                      <option value="80+">80+</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Gender</label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male ♂</option>
+                      <option value="female">Female ♀</option>
+                      <option value="other">Other / Prefer not to say</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Language</label>
+                  <select
+                    value={preferredLanguage}
+                    onChange={(e) => setPreferredLanguage(e.target.value as SupportedLanguage)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select language</option>
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.nativeName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  disabled={!displayName || !ageRange || !gender || !preferredLanguage}
+                  onClick={() => {
+                    const profile = {
+                      displayName,
+                      ageRange,
+                      gender,
+                      language: preferredLanguage,
+                    };
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('aiUserProfile', JSON.stringify(profile));
+                    }
+                    setCurrentLanguage(preferredLanguage);
+                    setGlobalLanguage(preferredLanguage);
+                    setShowProfileModal(false);
+                  }}
+                  className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                    displayName && ageRange && gender && preferredLanguage
+                      ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-lg'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Continue →
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Search Bar */}
       <div className="relative">
         <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 overflow-hidden">
@@ -252,18 +413,35 @@ export default function SimpleAISearch() {
             }}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             placeholder={
-              currentLanguage === "fa" ? "هر چیزی که در ذهن دارید بنویسید..." :
-              currentLanguage === "ar" ? "اكتب أي شيء في ذهنك..." :
-              currentLanguage === "es" ? "Escribe lo que tengas en mente..." :
-              currentLanguage === "fr" ? "Écrivez ce que vous avez en tête..." :
-              currentLanguage === "tr" ? "Aklınızda ne varsa yazın..." :
-              currentLanguage === "ru" ? "Напишите, что у вас на уме..." :
-              currentLanguage === "zh" ? "写下您心中所想..." :
-              currentLanguage === "ja" ? "心に思うことを書いてください..." :
-              currentLanguage === "ko" ? "마음에 있는 것을 써보세요..." :
-              currentLanguage === "hi" ? "अपने मन की बात लिखें..." :
-              currentLanguage === "pt" ? "Escreva o que está em sua mente..." :
-              "Write whatever is on your mind..."
+              !searchQuery.trim()
+                ? (
+                    currentLanguage === "fa" ? "هر چیزی که در ذهن دارید بنویسید..." :
+                    currentLanguage === "ar" ? "اكتب أي شيء في ذهنك..." :
+                    currentLanguage === "es" ? "Escribe lo que tengas en mente..." :
+                    currentLanguage === "fr" ? "Écrivez ce que vous avez en tête..." :
+                    currentLanguage === "tr" ? "Aklınızda ne varsa yazın..." :
+                    currentLanguage === "ru" ? "Напишите, что у вас на уме..." :
+                    currentLanguage === "zh" ? "写下您心中所想..." :
+                    currentLanguage === "ja" ? "心に思うことを書いてください..." :
+                    currentLanguage === "ko" ? "마음에 있는 것을 써보세요..." :
+                    currentLanguage === "hi" ? "अपने मन की बात लिखें..." :
+                    currentLanguage === "pt" ? "Escreva o que está em sua mente..." :
+                    "Write whatever is on your mind..."
+                  )
+                : (
+                    currentLanguage === "fa" ? "هر چیزی که در ذهن دارید بنویسید..." :
+                    currentLanguage === "ar" ? "اكتب أي شيء في ذهنك..." :
+                    currentLanguage === "es" ? "Escribe lo que tengas en mente..." :
+                    currentLanguage === "fr" ? "Écrivez ce que vous avez en tête..." :
+                    currentLanguage === "tr" ? "Aklınızda ne varsa yazın..." :
+                    currentLanguage === "ru" ? "Напишите, что у вас на уме..." :
+                    currentLanguage === "zh" ? "写下您心中所想..." :
+                    currentLanguage === "ja" ? "心に思うことを書いてください..." :
+                    currentLanguage === "ko" ? "마음에 있는 것을 써보세요..." :
+                    currentLanguage === "hi" ? "अपने मन की बात लिखें..." :
+                    currentLanguage === "pt" ? "Escreva o que está em sua mente..." :
+                    "Write whatever is on your mind..."
+                  )
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
             dir={currentLanguage === "fa" || currentLanguage === "ar" ? "rtl" : "ltr"}
