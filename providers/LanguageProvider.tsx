@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type AppLanguage = "en" | "fa" | "es";
+const FORCE_ENGLISH = true;
 
 type LanguageContextValue = {
   language: AppLanguage;
@@ -16,15 +17,26 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>("en");
 
   const setLanguage = (lang: AppLanguage) => {
-    setLanguageState(lang);
+    if (FORCE_ENGLISH) {
+      setLanguageState("en");
+    } else {
+      setLanguageState(lang);
+    }
     if (typeof window !== "undefined") {
       try {
-        localStorage.setItem("globalLanguage", lang);
+        localStorage.setItem("globalLanguage", FORCE_ENGLISH ? "en" : lang);
       } catch {}
     }
   };
 
   useEffect(() => {
+    if (FORCE_ENGLISH) {
+      setLanguageState("en");
+      if (typeof window !== "undefined") {
+        try { localStorage.setItem("globalLanguage", "en"); } catch {}
+      }
+      return;
+    }
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem("globalLanguage") as AppLanguage | null;
@@ -59,5 +71,6 @@ export function useLanguage(): LanguageContextValue {
 }
 
 export function normalizeToAppLanguage(input: string): AppLanguage {
+  if (FORCE_ENGLISH) return "en";
   return input === "fa" ? "fa" : input === "es" ? "es" : "en";
 }
