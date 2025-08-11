@@ -44,3 +44,4 @@ coverage/
 # Uploads or generated images
 public/uploads/
 public/temp/
+.vercel

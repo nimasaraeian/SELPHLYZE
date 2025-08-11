@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type AppLanguage = "en" | "fa" | "es";
 const FORCE_ENGLISH = true;
@@ -11,10 +11,10 @@ type LanguageContextValue = {
   isRtl: boolean;
 };
 
-const LanguageContext = React.createContext<LanguageContextValue | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = React.useState<AppLanguage>("en");
+  const [language, setLanguageState] = useState<AppLanguage>("en");
 
   const setLanguage = (lang: AppLanguage) => {
     if (FORCE_ENGLISH) {
@@ -29,7 +29,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (FORCE_ENGLISH) {
       setLanguageState("en");
       if (typeof window !== "undefined") {
@@ -50,22 +50,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof document === "undefined") return;
     const html = document.documentElement;
     html.lang = language;
     html.dir = language === "fa" ? "rtl" : "ltr";
   }, [language]);
 
-  const isRtl = React.useMemo(() => language === "fa", [language]);
+  const isRtl = useMemo(() => language === "fa", [language]);
 
-  const value: LanguageContextValue = React.useMemo(() => ({ language, setLanguage, isRtl }), [language]);
+  const value: LanguageContextValue = useMemo(() => ({ language, setLanguage, isRtl }), [language]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage(): LanguageContextValue {
-  const ctx = React.useContext(LanguageContext);
+  const ctx = useContext(LanguageContext);
   if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");
   return ctx;
 }

@@ -12,6 +12,7 @@ declare module 'react' {
   export function useState<S = undefined>(): [S | undefined, React.Dispatch<React.SetStateAction<S | undefined>>];
   export function useEffect(effect: React.EffectCallback, deps?: React.DependencyList): void;
   export function useContext<T>(context: React.Context<T>): T;
+  export function createContext<T>(defaultValue: T): React.Context<T>;
   export function useReducer<R extends React.Reducer<any, any>>(
     reducer: R,
     initialState: React.ReducerState<R>,
