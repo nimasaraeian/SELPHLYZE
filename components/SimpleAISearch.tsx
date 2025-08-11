@@ -95,9 +95,7 @@ export default function SimpleAISearch() {
   };
 
   // Generate AI response
-  const generateAIResponse = async (userMessage: string): Promise<string> => {
-    const language = detectLanguage(userMessage);
-    
+  const generateAIResponse = async (userMessage: string, language: SupportedLanguage): Promise<string> => {
     try {
       const prompt = `You are a helpful AI psychology assistant. User said: "${userMessage}". 
       Language: ${language === "fa" ? "Persian/Farsi" : "English"}. 
@@ -112,7 +110,7 @@ export default function SimpleAISearch() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, language: currentLanguage }),
+        body: JSON.stringify({ prompt, language }),
       });
 
       if (!response.ok) {
@@ -125,7 +123,7 @@ export default function SimpleAISearch() {
         : "I understand your concern. Let me help you find the right resources.");
     } catch (error) {
       console.error("AI Response Error:", error);
-      return currentLanguage === "fa" 
+      return language === "fa" 
         ? "متوجه نگرانی شما هستم. بیایید منابع مناسب را برای شما پیدا کنیم."
         : "I understand your concern. Let me help you find the right resources.";
     }
@@ -150,7 +148,7 @@ export default function SimpleAISearch() {
     setIsLoading(true);
 
     try {
-      const aiResponse = await generateAIResponse(searchQuery);
+      const aiResponse = await generateAIResponse(searchQuery, detectedLanguage);
       const suggestions = getRoutingSuggestions(searchQuery);
       
       let fullAiResponse = aiResponse;

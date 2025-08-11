@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { testCategories } from "../../data/tests";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function TestsPage() {
   const [showModal, setShowModal] = useState(false);
@@ -73,6 +74,19 @@ export default function TestsPage() {
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
+                  {/* Image */}
+                  <div className="relative h-40 w-full">
+                    <Image
+                      src={test.image}
+                      alt={test.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                      priority={idx < 2}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  </div>
+
                   {/* Content */}
                   <div className="relative p-6 flex flex-col h-full">
                     {/* Category Icon */}

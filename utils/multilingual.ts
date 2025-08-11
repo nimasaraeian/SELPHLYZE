@@ -36,8 +36,8 @@ const LANGUAGE_PATTERNS = {
   ru: /[\u0400-\u04ff]/,
   hi: /[\u0900-\u097f]/,
   
-  // Turkish specific characters and common words
-  tr: /[çğıöşü]|(\b(ve|veya|ama|ile|için|den|dan|da|de|bu|şu|o|bir|olan|olan|değil|nedir|nasıl|ne|kim|nerede|ne zaman)\b)/i,
+  // Turkish specific characters and common words (expanded)
+  tr: /[çğıöşü]|(\b(merhaba|selam|günaydın|iyi akşamlar|teşekkür(ler)?|lütfen|yardım|nasılsın|ve|veya|ama|ile|için|den|dan|da|de|bu|şu|o|bir|olan|değil|nedir|nasıl|ne|kim|nerede|ne zaman)\b)/i,
   
   // Word-based patterns (check after character patterns)
   en: /\b(the|and|or|but|with|in|on|for|by|at|from|to|of|is|are|was|were|what|how|when|where|why)\b/i,
