@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
+import StartConfirm from "@/components/StartConfirm";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { 
   Brain, 
   Users, 
@@ -80,6 +83,9 @@ const modules = [
 
 export default function ModulesPage() {
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
+  const [pendingPath, setPendingPath] = useState<string>("");
+  const { language } = useLanguage();
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
@@ -160,8 +166,11 @@ export default function ModulesPage() {
             </div>
 
                 {/* Action Button */}
-                <Link href={module.path} className="w-full">
-                  <motion.button
+                <button
+                  onClick={(e) => { e.preventDefault(); setPendingPath(module.path); setConfirmOpen(true); }}
+                  className="w-full"
+                >
+                  <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r ${module.color} text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group-hover:shadow-cyan-500/25 flex items-center justify-center gap-2`}
@@ -173,8 +182,8 @@ export default function ModulesPage() {
                     >
                       <ArrowRight className="w-5 h-5" />
                     </motion.div>
-                  </motion.button>
-                </Link>
+                  </motion.div>
+                </button>
 
                 {/* Floating Elements */}
                 <motion.div
@@ -237,6 +246,13 @@ export default function ModulesPage() {
     </div>
         </motion.div>
       </div>
+      {/* Start Confirm Modal */}
+      <StartConfirm
+        open={confirmOpen}
+        language={language}
+        onConfirm={() => { setConfirmOpen(false); if (pendingPath) window.location.href = pendingPath; }}
+        onCancel={() => { setConfirmOpen(false); setPendingPath(""); }}
+      />
     </main>
   );
 }

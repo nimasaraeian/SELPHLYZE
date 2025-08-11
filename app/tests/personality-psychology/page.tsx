@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import StartConfirm from "@/components/StartConfirm";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const questions = [
   { id: 1, text: "How do you feel when meeting new people?" },
@@ -23,6 +25,8 @@ const options = [
 export default function PersonalityTestPage() {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const router = useRouter();
+  const { language } = useLanguage();
+  const [confirmOpen, setConfirmOpen] = useState(true);
 
   const handleSelect = (qId: number, value: string) => {
     setAnswers({ ...answers, [qId]: value });
@@ -35,6 +39,12 @@ export default function PersonalityTestPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-950 via-purple-900 to-indigo-800 p-8 text-white">
+      <StartConfirm
+        open={confirmOpen}
+        language={language}
+        onConfirm={() => setConfirmOpen(false)}
+        onCancel={() => router.push('/tests')}
+      />
       <h1 className="text-4xl font-extrabold text-cyan-300 mb-8 drop-shadow-lg">
         Personality Test
       </h1>
