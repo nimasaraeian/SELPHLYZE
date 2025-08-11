@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import StartConfirm from "@/components/StartConfirm";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { translateArray } from "@/utils/i18nTest";
 
 const questions = [
   { id: 1, text: "How do you feel when meeting new people?" },
@@ -28,12 +29,33 @@ export default function PersonalityTestPage() {
   const { language } = useLanguage();
   const [confirmOpen, setConfirmOpen] = useState(true);
 
+  const [tQuestions, setTQuestions] = useState<string[]>(questions.map(q => q.text));
+  const [tOptions, setTOptions] = useState<string[]>(options);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const qTexts = questions.map(q => q.text);
+        const [qt, ot] = await Promise.all([
+          translateArray(qTexts, language),
+          translateArray(options, language)
+        ]);
+        setTQuestions(qt);
+        setTOptions(ot);
+      } catch {
+        setTQuestions(questions.map(q => q.text));
+        setTOptions(options);
+      }
+    };
+    load();
+  }, [language]);
+
   const handleSelect = (qId: number, value: string) => {
     setAnswers({ ...answers, [qId]: value });
   };
 
   const handleSubmit = async () => {
-    localStorage.setItem("testAnswers", JSON.stringify(answers));
+    localStorage.setItem("testAnswers", JSON.stringify({ answers, language }));
     router.push("/analysis");
   };
 
@@ -56,10 +78,10 @@ export default function PersonalityTestPage() {
             className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20"
           >
             <h2 className="font-bold text-xl mb-5 text-cyan-200 drop-shadow-md">
-              {q.text}
+              {tQuestions[q.id - 1] || q.text}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {options.map((opt) => (
+              {tOptions.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => handleSelect(q.id, opt)}
@@ -83,7 +105,7 @@ export default function PersonalityTestPage() {
         disabled={Object.keys(answers).length < questions.length}
         className="mt-10 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-2xl shadow-2xl hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
       >
-        Analyze My Personality
+        {language === 'fa' ? 'تحلیل شخصیت من' : language === 'ar' ? 'حلّل شخصيتي' : language === 'tr' ? 'Kişiliğimi Analiz Et' : language === 'es' ? 'Analizar Mi Personalidad' : language === 'fr' ? 'Analyser Ma Personnalité' : language === 'ru' ? 'Анализ Моей Личности' : language === 'zh' ? '分析我的个性' : language === 'ja' ? '私の性格を分析' : language === 'ko' ? '나의 성격 분석' : language === 'hi' ? 'मेरी व्यक्तित्व का विश्लेषण' : language === 'pt' ? 'Analisar Minha Personalidade' : 'Analyze My Personality'}
       </button>
     </div>
   );

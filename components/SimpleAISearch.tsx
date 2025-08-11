@@ -34,6 +34,7 @@ export default function SimpleAISearch() {
   const [ageRange, setAgeRange] = useState<string>("");
   const [gender, setGender] = useState<string>("");
   const [preferredLanguage, setPreferredLanguage] = useState<SupportedLanguage>("en");
+  const [savePermanently, setSavePermanently] = useState<boolean>(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -56,7 +57,7 @@ export default function SimpleAISearch() {
     setCurrentLanguage(globalLanguage);
   }, [globalLanguage]);
 
-  // Load chat history
+  // Load chat history and user profile
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedChat = localStorage.getItem("simpleAiChatHistory");
@@ -73,9 +74,15 @@ export default function SimpleAISearch() {
           console.error("Error loading chat history:", error);
         }
       }
+      let shouldOpenProfileModal = false;
       if (savedProfile) {
         try {
           const p = JSON.parse(savedProfile);
+          const hasDisplayName = Boolean(p.displayName && String(p.displayName).trim());
+          const hasAgeRange = Boolean(p.ageRange && String(p.ageRange).trim());
+          const hasGender = Boolean(p.gender && String(p.gender).trim());
+          const hasLanguage = Boolean(p.language && String(p.language).trim());
+
           setDisplayName(p.displayName || "");
           setAgeRange(p.ageRange || "");
           setGender(p.gender || "");
@@ -84,11 +91,28 @@ export default function SimpleAISearch() {
             setCurrentLanguage(p.language as SupportedLanguage);
             setGlobalLanguage(p.language as SupportedLanguage);
           }
-        } catch {}
+
+          if (!(hasDisplayName && hasAgeRange && hasGender && hasLanguage)) {
+            shouldOpenProfileModal = true;
+          }
+        } catch {
+          shouldOpenProfileModal = true;
+        }
       } else {
-        // Open modal to collect profile before first search
+        shouldOpenProfileModal = true;
+      }
+
+      if (shouldOpenProfileModal) {
         setShowProfileModal(true);
       }
+
+      // Allow forcing the modal via URL parameter: ?profile=1 or ?forceModal=1
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('profile') === '1' || params.get('forceModal') === '1') {
+          setShowProfileModal(true);
+        }
+      } catch {}
     }
   }, []);
 
@@ -367,6 +391,19 @@ export default function SimpleAISearch() {
                   </select>
                 </div>
 
+                <div className="flex items-center gap-3 pt-2">
+                  <input
+                    id="savePermanently"
+                    type="checkbox"
+                    checked={savePermanently}
+                    onChange={(e) => setSavePermanently(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                  />
+                  <label htmlFor="savePermanently" className="text-sm text-gray-700 select-none">
+                    Save these details to my profile for future visits
+                  </label>
+                </div>
+
                 <button
                   disabled={!displayName || !ageRange || !gender || !preferredLanguage}
                   onClick={() => {
@@ -377,7 +414,12 @@ export default function SimpleAISearch() {
                       language: preferredLanguage,
                     };
                     if (typeof window !== 'undefined') {
-                      localStorage.setItem('aiUserProfile', JSON.stringify(profile));
+                      if (savePermanently) {
+                        localStorage.setItem('aiUserProfile', JSON.stringify(profile));
+                      } else {
+                        // Ensure it's not stored permanently
+                        localStorage.removeItem('aiUserProfile');
+                      }
                     }
                     setCurrentLanguage(preferredLanguage);
                     setGlobalLanguage(preferredLanguage);
@@ -396,6 +438,17 @@ export default function SimpleAISearch() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Quick actions */}
+      <div className="flex items-center justify-end mb-2">
+        <button
+          type="button"
+          onClick={() => setShowProfileModal(true)}
+          className="text-sm text-teal-300 hover:text-teal-200 underline"
+        >
+          Edit profile
+        </button>
+      </div>
+
       {/* Search Bar */}
       <div className="relative">
         <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 overflow-hidden">

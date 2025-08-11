@@ -2,14 +2,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { SUPPORTED_LANGUAGES } from "@/utils/multilingual";
 
 export default function WelcomeQuestions() {
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
-  const [country, setCountry] = useState("");
+  const [language, setLanguage] = useState("");
   const router = useRouter();
 
-  const isComplete = age && gender && country;
+  const isComplete = age && gender && language;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 via-purple-100 to-indigo-100">
@@ -55,31 +56,64 @@ export default function WelcomeQuestions() {
           </select>
         </div>
 
-        {/* Country */}
+        {/* Language */}
         <div className="mb-6">
-          <label className="block text-gray-700 mb-2 font-medium">Country</label>
+          <label className="block text-gray-700 mb-2 font-medium">Language</label>
           <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
             className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400"
           >
-            <option value="">Select your country</option>
-            <option value="usa">United States</option>
-            <option value="canada">Canada</option>
-            <option value="germany">Germany</option>
-            <option value="turkey">Turkey</option>
-            <option value="iran">Iran</option>
-            <option value="other">Other</option>
+            <option value="">Select your language</option>
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.nativeName}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Continue Button */}
         <button
           onClick={() => {
+            // Persist basic info for other parts of app
             localStorage.setItem(
               "userInfo",
-              JSON.stringify({ age, gender, country })
+              JSON.stringify({ age, gender, language })
             );
+
+            // Derive ageRange compatible with SimpleAISearch modal logic
+            const ageNum = parseInt(age, 10);
+            let ageRange = "";
+            if (!isNaN(ageNum)) {
+              if (ageNum < 15) ageRange = "15-20";
+              else if (ageNum < 20) ageRange = "15-20";
+              else if (ageNum < 25) ageRange = "20-25";
+              else if (ageNum < 30) ageRange = "25-30";
+              else if (ageNum < 35) ageRange = "30-35";
+              else if (ageNum < 40) ageRange = "35-40";
+              else if (ageNum < 45) ageRange = "40-45";
+              else if (ageNum < 50) ageRange = "45-50";
+              else if (ageNum < 60) ageRange = "50-60";
+              else if (ageNum < 70) ageRange = "60-70";
+              else if (ageNum < 80) ageRange = "70-80";
+              else ageRange = "80+";
+            }
+
+            // Also set the AI profile expected by SimpleAISearch so modal won't be missed later
+            localStorage.setItem(
+              "aiUserProfile",
+              JSON.stringify({
+                displayName: "",
+                ageRange,
+                gender,
+                language,
+              })
+            );
+            // Set global language so all pages immediately use user's choice
+            try {
+              localStorage.setItem("globalLanguage", language);
+            } catch {}
             router.push("/tests");
           }}
           disabled={!isComplete}

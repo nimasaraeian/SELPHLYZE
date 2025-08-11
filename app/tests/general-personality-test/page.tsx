@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { translateArray } from "@/utils/i18nTest";
 import StartConfirm from "@/components/StartConfirm";
 import { useLanguage } from "@/providers/LanguageProvider";
 
@@ -40,7 +41,77 @@ type ResponseState = {
   openText?: string;
 };
 
-const SCENARIO_Q6_15: ScenarioItem[] = [
+const SCENARIO_Q1_15: ScenarioItem[] = [
+  {
+    id: 1,
+    prompt:
+      "Q1 – Team Crisis\nA key project deadline is tomorrow, but a critical task is incomplete due to a colleague’s mistake. The team is looking at you for a decision.",
+    options: [
+      { text: "Take immediate control, reassign tasks, and push the team to meet the deadline.", tags: "High Extraversion – ENTJ – Type 3 – HEXACO Diligence" },
+      { text: "Pause, analyze root causes, and create a step-by-step recovery plan.", tags: "High Conscientiousness – INTJ – Type 5 – HEXACO Prudence" },
+      { text: "Encourage the team emotionally, emphasizing unity and mutual support.", tags: "High Agreeableness – ENFJ – Type 2 – HEXACO Emotionality" },
+      { text: "Suggest a creative pivot to turn the mistake into an opportunity.", tags: "High Openness – ENTP – Type 7 – CliftonStrengths Ideation" },
+      { text: "Focus only on your part of the project, letting others handle the mistake.", tags: "Low Extraversion – ISTP – Type 9 – HEXACO Low Social Boldness" },
+      { text: "Confront the colleague directly to ensure accountability and future caution.", tags: "High Assertiveness – Dark Triad Machiavellianism – Type 8" },
+      { text: "Suggest a short break to clear minds before deciding the next step.", tags: "High Emotional Regulation – ISFJ – Type 6 – HEXACO Patience" },
+    ],
+  },
+  {
+    id: 2,
+    prompt:
+      "Q2 – Social Invitation\nA friend invites you to a large networking event with many strangers.",
+    options: [
+      { text: "Attend enthusiastically, aiming to meet as many people as possible.", tags: "High Extraversion – ESFP – Type 7 – HEXACO Social Boldness" },
+      { text: "Attend selectively, focusing on meeting a few key contacts.", tags: "Moderate Extraversion – ENTP – Type 3 – Strategic Thinking" },
+      { text: "Politely decline, preferring to spend time alone or with close friends.", tags: "Low Extraversion – INFP – Type 4 – HEXACO Reserved" },
+      { text: "Go to observe people and learn from interactions without actively networking.", tags: "High Openness – INTP – Type 5 – HEXACO Inquisitiveness" },
+      { text: "Accept to support your friend, even if the event isn’t your style.", tags: "High Agreeableness – ISFJ – Type 9 – HEXACO Altruism" },
+      { text: "Decline and suggest an alternative smaller gathering.", tags: "Moderate Agreeableness – INFJ – Type 2 – Preference for Intimacy" },
+      { text: "Attend only if it aligns with a professional or strategic goal.", tags: "High Conscientiousness – ENTJ – Type 8 – HEXACO Prudence" },
+    ],
+  },
+  {
+    id: 3,
+    prompt:
+      "Q3 – Ethical Dilemma\nYou notice a colleague taking office supplies home without permission.",
+    options: [
+      { text: "Report them immediately to a supervisor.", tags: "High Honesty-Humility – ISTJ – Type 1" },
+      { text: "Approach them privately to discuss why it’s wrong.", tags: "High Agreeableness – ESFJ – Type 2" },
+      { text: "Ignore it; it’s not your business.", tags: "Low Conscientiousness – INTP – Type 5" },
+      { text: "Subtly make a joke about it to hint at awareness.", tags: "Moderate Openness – ENTP – Type 7" },
+      { text: "Evaluate if the company mistreats employees before deciding.", tags: "High Analytical Thinking – INTJ – Type 5" },
+      { text: "Take it as a sign of low morale and think about systemic issues.", tags: "High Emotionality – INFJ – Type 4" },
+      { text: "Confront them publicly to set an example.", tags: "High Assertiveness – ESTP – Type 8" },
+    ],
+  },
+  {
+    id: 4,
+    prompt:
+      "Q4 – Last-Minute Plan Change\nYour weekend hiking trip gets cancelled due to bad weather.",
+    options: [
+      { text: "Quickly plan an alternative exciting activity.", tags: "High Openness – ENFP – Type 7" },
+      { text: "Reschedule the trip for another date immediately.", tags: "High Conscientiousness – ISTJ – Type 1" },
+      { text: "Suggest staying in and doing something relaxing.", tags: "High Emotional Regulation – ISFP – Type 9" },
+      { text: "Organize a group indoor event to keep everyone engaged.", tags: "High Extraversion – ESFP – Type 3" },
+      { text: "Take the opportunity for personal reflection or reading.", tags: "High Introversion – INFJ – Type 4" },
+      { text: "Ask everyone for suggestions and vote.", tags: "High Agreeableness – ENFJ – Type 2" },
+      { text: "Decide to spend the time on unfinished work or projects.", tags: "High Achievement Focus – ENTJ – Type 8" },
+    ],
+  },
+  {
+    id: 5,
+    prompt:
+      "Q5 – Conflict in a Group\nTwo friends in your group have an argument, and the tension is affecting everyone.",
+    options: [
+      { text: "Step in and mediate directly.", tags: "High Agreeableness – ENFJ – Type 9" },
+      { text: "Listen to both sides separately before suggesting a solution.", tags: "High Conscientiousness – INFJ – Type 2" },
+      { text: "Let them resolve it on their own.", tags: "Low Agreeableness – INTP – Type 5" },
+      { text: "Distract the group with humor to diffuse tension.", tags: "High Openness – ENTP – Type 7" },
+      { text: "Take sides with the person you feel is right.", tags: "Moderate Honesty-Humility – ESTP – Type 8" },
+      { text: "Avoid the conflict entirely by leaving.", tags: "Low Extraversion – ISFP – Type 4" },
+      { text: "Propose a group discussion to address the issue openly.", tags: "High Extraversion – ESFJ – Type 1" },
+    ],
+  },
   {
     id: 6,
     prompt: "Q6 – Public Speaking Opportunity\nYour manager asks you to give a presentation to a large audience next week.",
@@ -345,9 +416,84 @@ const OPEN_Q31_35: OpenEndedItem[] = [
 export default function GeneralPersonalityTestPage() {
   const { language } = useLanguage();
   const [confirmOpen, setConfirmOpen] = useState(true);
+  const [tScenario1to15, setTScenario1to15] = useState<ScenarioItem[]>(SCENARIO_Q1_15);
+  const [tScenarioLikert16to25, setTScenarioLikert16to25] = useState<ScenarioLikertItem[]>(SCENARIO_LIKERT_Q16_25);
+  const [tLikert26to30, setTLikert26to30] = useState<LikertOnlyItem[]>(LIKERT_Q26_30);
+  const [tOpen31to35, setTOpen31to35] = useState<OpenEndedItem[]>(OPEN_Q31_35);
+
+  // Translate prompts and options when language changes
+  useEffect(() => {
+    const doTranslate = async () => {
+      // Ensure we honor saved aiUserProfile language, if present
+      let lang = language;
+      try {
+        const saved = localStorage.getItem('aiUserProfile');
+        if (saved) {
+          const p = JSON.parse(saved);
+          if (p?.language) lang = p.language;
+        }
+      } catch {}
+
+      if (lang === 'en') {
+        setTScenario1to15(SCENARIO_Q1_15);
+        setTScenarioLikert16to25(SCENARIO_LIKERT_Q16_25);
+        setTLikert26to30(LIKERT_Q26_30);
+        setTOpen31to35(OPEN_Q31_35);
+        return;
+      }
+      // Q1-15
+      const prompts1to15 = SCENARIO_Q1_15.map(q => q.prompt);
+      const options1to15 = SCENARIO_Q1_15.flatMap(q => q.options.map(o => o.text));
+      const [tp1, to1] = await Promise.all([
+        translateArray(prompts1to15, lang),
+        translateArray(options1to15, lang),
+      ]);
+      let optIdx = 0;
+      const translated1to15 = SCENARIO_Q1_15.map((q, i) => ({
+        ...q,
+        prompt: tp1[i] || q.prompt,
+        options: q.options.map((o) => ({ ...o, text: to1[optIdx++] || o.text })),
+      }));
+
+      // Q16-25
+      const prompts16to25 = SCENARIO_LIKERT_Q16_25.map(q => q.prompt);
+      const likertPrompts = SCENARIO_LIKERT_Q16_25.map(q => q.likertPrompt);
+      const options16to25 = SCENARIO_LIKERT_Q16_25.flatMap(q => q.options.map(o => o.text || ""));
+      const [tp2, tlp, to2] = await Promise.all([
+        translateArray(prompts16to25, lang),
+        translateArray(likertPrompts, lang),
+        translateArray(options16to25, lang),
+      ]);
+      optIdx = 0;
+      const translated16to25 = SCENARIO_LIKERT_Q16_25.map((q, i) => ({
+        ...q,
+        prompt: tp2[i] || q.prompt,
+        options: q.options.map((o) => ({ ...o, text: (to2[optIdx++] || o.text) })),
+        likertPrompt: tlp[i] || q.likertPrompt,
+      }));
+
+      // Q26-30 Likert
+      const prompts26to30 = LIKERT_Q26_30.map(q => q.prompt);
+      const tp3 = await translateArray(prompts26to30, lang);
+      const translated26to30 = LIKERT_Q26_30.map((q, i) => ({ ...q, prompt: tp3[i] || q.prompt }));
+
+      // Q31-35 Open
+      const prompts31to35 = OPEN_Q31_35.map(q => q.prompt);
+      const tp4 = await translateArray(prompts31to35, lang);
+      const translated31to35 = OPEN_Q31_35.map((q, i) => ({ ...q, prompt: tp4[i] || q.prompt }));
+
+      setTScenario1to15(translated1to15);
+      setTScenarioLikert16to25(translated16to25);
+      setTLikert26to30(translated26to30);
+      setTOpen31to35(translated31to35);
+    };
+    doTranslate();
+  }, [language]);
 
   // Responses keyed by question id
   const [responses, setResponses] = useState<Record<number, ResponseState>>({});
+  const [startTs, setStartTs] = useState<number | null>(null);
+  const [endTs, setEndTs] = useState<number | null>(null);
 
   const setChoice = (qid: number, idx: number) => {
     setResponses((prev) => ({ ...prev, [qid]: { ...prev[qid], descriptiveChoice: idx } }));
@@ -364,7 +510,11 @@ export default function GeneralPersonalityTestPage() {
 
   const handleSubmit = () => {
     try {
-      localStorage.setItem("selphlyze_general_personality_v1", JSON.stringify(responses));
+      const durationMs = startTs && endTs ? endTs - startTs : null;
+      localStorage.setItem(
+        "selphlyze_general_personality_v1",
+        JSON.stringify({ responses, meta: { startTs, endTs, durationMs }, language })
+      );
       alert("Responses saved. Analysis coming soon.");
     } catch {}
   };
@@ -387,23 +537,69 @@ export default function GeneralPersonalityTestPage() {
     </div>
   );
 
+  const ui = useMemo(() => {
+    if (language === 'fa') {
+      return {
+        title: 'آزمون شخصیت سلـف‌لایز – ۳۵ سوال',
+        likertLabel: 'لیکرت (۱–کاملاً مخالفم … ۷–کاملاً موافقم)',
+        legend1: '۱ = کاملاً مخالفم',
+        legend2: '۲ = مخالفم',
+        legend3: '۳ = تا حدی مخالفم',
+        legend4: '۴ = خنثی',
+        legend5: '۵ = تا حدی موافقم',
+        legend6: '۶ = موافقم',
+        legend7: '۷ = کاملاً موافقم',
+        openPlaceholder: 'پاسخ خود را بنویسید (حداقل ۱۰ کاراکتر).',
+        submit: 'ارسال پاسخ‌ها',
+      } as const;
+    }
+    if (language === 'zh') {
+      return {
+        title: 'Selphlyze 人格测试 – 35 题',
+        likertLabel: '李克特量表（1–非常不同意 … 7–非常同意）',
+        legend1: '1 = 非常不同意',
+        legend2: '2 = 不同意',
+        legend3: '3 = 有点不同意',
+        legend4: '4 = 中立',
+        legend5: '5 = 有点同意',
+        legend6: '6 = 同意',
+        legend7: '7 = 非常同意',
+        openPlaceholder: '写下你的答案（至少 10 个字符）。',
+        submit: '提交答案',
+      } as const;
+    }
+    return {
+      title: 'Selphlyze Personality Test – 35 Items',
+      likertLabel: 'Likert (1–Strongly Disagree … 7–Strongly Agree)',
+      legend1: '1 = Strongly Disagree',
+      legend2: '2 = Disagree',
+      legend3: '3 = Somewhat Disagree',
+      legend4: '4 = Neutral',
+      legend5: '5 = Somewhat Agree',
+      legend6: '6 = Agree',
+      legend7: '7 = Strongly Agree',
+      openPlaceholder: 'Write your answer (min 10 characters).',
+      submit: 'Submit Responses',
+    } as const;
+  }, [language]);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-20 px-6">
       {/* Start Confirm */}
       <StartConfirm
         open={confirmOpen}
         language={language}
-        onConfirm={() => setConfirmOpen(false)}
+        onConfirm={() => { setStartTs(Date.now()); setConfirmOpen(false); }}
         onCancel={() => history.back()}
       />
 
       <div className="max-w-5xl mx-auto space-y-10">
         <h1 className="text-4xl font-extrabold text-center bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-          Selphlyze Personality Test – 35 Items
+          {ui.title}
         </h1>
 
-        {/* Q6–Q15 Scenario */}
-        {SCENARIO_Q6_15.map((q, qi) => (
+        {/* Q1–Q15 Scenario */}
+        {tScenario1to15.map((q, qi) => (
           <motion.section
             key={q.id}
             initial={{ opacity: 0, y: 10 }}
@@ -426,21 +622,11 @@ export default function GeneralPersonalityTestPage() {
                 </button>
               ))}
             </div>
-            {/* Notes under every item */}
-            <div className="mt-4">
-              <label className="block text-sm text-gray-300 mb-1">Notes (optional)</label>
-              <textarea
-                value={responses[q.id]?.notes || ""}
-                onChange={(e) => setNotes(q.id, e.target.value)}
-                className="w-full h-20 p-3 rounded-xl bg-slate-800 border border-slate-600 text-white"
-                placeholder="Add any thoughts or context..."
-              />
-            </div>
           </motion.section>
         ))}
 
         {/* Q16–Q25 Scenario + Likert */}
-        {SCENARIO_LIKERT_Q16_25.map((q) => (
+        {tScenarioLikert16to25.map((q) => (
           <motion.section
             key={q.id}
             initial={{ opacity: 0, y: 10 }}
@@ -464,23 +650,23 @@ export default function GeneralPersonalityTestPage() {
               ))}
             </div>
             <div className="mt-4">
-              <p className="text-sm text-gray-300">{q.likertPrompt}</p>
+              <p className="text-sm text-gray-300 mb-2">{q.likertPrompt}</p>
               <LikertScale qid={q.id} />
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm text-gray-300 mb-1">Notes (optional)</label>
-              <textarea
-                value={responses[q.id]?.notes || ""}
-                onChange={(e) => setNotes(q.id, e.target.value)}
-                className="w-full h-20 p-3 rounded-xl bg-slate-800 border border-slate-600 text-white"
-                placeholder="Add any thoughts or context..."
-              />
+              <div className="mt-2 text-xs text-gray-400 flex flex-wrap gap-3">
+                <span>{ui.legend1}</span>
+                <span>{ui.legend2}</span>
+                <span>{ui.legend3}</span>
+                <span>{ui.legend4}</span>
+                <span>{ui.legend5}</span>
+                <span>{ui.legend6}</span>
+                <span>{ui.legend7}</span>
+              </div>
             </div>
           </motion.section>
         ))}
 
         {/* Q26–Q30 Likert only */}
-        {LIKERT_Q26_30.map((q) => (
+        {tLikert26to30.map((q) => (
           <motion.section
             key={q.id}
             initial={{ opacity: 0, y: 10 }}
@@ -488,22 +674,22 @@ export default function GeneralPersonalityTestPage() {
             className="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-xl"
           >
             <h2 className="font-bold text-lg mb-2">Q{q.id} – {q.prompt}</h2>
-            <p className="text-sm text-gray-300">Likert (1–Strongly Disagree … 7–Strongly Agree)</p>
+            <p className="text-sm text-gray-300 mb-2">{ui.likertLabel}</p>
             <LikertScale qid={q.id} />
-            <div className="mt-4">
-              <label className="block text-sm text-gray-300 mb-1">Notes (optional)</label>
-              <textarea
-                value={responses[q.id]?.notes || ""}
-                onChange={(e) => setNotes(q.id, e.target.value)}
-                className="w-full h-20 p-3 rounded-xl bg-slate-800 border border-slate-600 text-white"
-                placeholder="Add any thoughts or context..."
-              />
+            <div className="mt-2 text-xs text-gray-400 flex flex-wrap gap-3">
+              <span>{ui.legend1}</span>
+              <span>{ui.legend2}</span>
+              <span>{ui.legend3}</span>
+              <span>{ui.legend4}</span>
+              <span>{ui.legend5}</span>
+              <span>{ui.legend6}</span>
+              <span>{ui.legend7}</span>
             </div>
           </motion.section>
         ))}
 
         {/* Q31–Q35 Open-ended */}
-        {OPEN_Q31_35.map((q) => (
+        {tOpen31to35.map((q) => (
           <motion.section
             key={q.id}
             initial={{ opacity: 0, y: 10 }}
@@ -515,26 +701,17 @@ export default function GeneralPersonalityTestPage() {
               value={responses[q.id]?.openText || ""}
               onChange={(e) => setOpenText(q.id, e.target.value)}
               className="w-full min-h-28 p-3 rounded-xl bg-slate-800 border border-slate-600 text-white"
-              placeholder="Write your answer (min 10 characters)."
+              placeholder={ui.openPlaceholder}
             />
-            <div className="mt-4">
-              <label className="block text-sm text-gray-300 mb-1">Notes (optional)</label>
-              <textarea
-                value={responses[q.id]?.notes || ""}
-                onChange={(e) => setNotes(q.id, e.target.value)}
-                className="w-full h-20 p-3 rounded-xl bg-slate-800 border border-slate-600 text-white"
-                placeholder="Add any thoughts or context..."
-              />
-            </div>
           </motion.section>
         ))}
 
         <div className="sticky bottom-6 flex justify-center">
           <button
-            onClick={handleSubmit}
+            onClick={() => { setEndTs(Date.now()); handleSubmit(); }}
             className="px-8 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-lg hover:shadow-xl hover:from-teal-400 hover:to-blue-400 transition"
           >
-            Submit Responses
+            {ui.submit}
           </button>
         </div>
       </div>
