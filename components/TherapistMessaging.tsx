@@ -405,7 +405,7 @@ export default function TherapistMessaging() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
               className="bg-slate-900 rounded-2xl p-6 w-full max-w-md border border-slate-700"
             >
               <div className="flex items-center justify-between mb-6">
