@@ -136,21 +136,12 @@ export default function AISearchChatFixed() {
     const language = detectLanguage(userMessage);
     
     try {
-      const prompt = `You are a helpful AI psychology assistant. The user said: "${userMessage}". 
-      Language detected: ${language === "fa" ? "Persian/Farsi" : "English"}. 
-      
-      Please respond in ${language === "fa" ? "Persian/Farsi" : "English"} with:
-      1. Empathetic acknowledgment of their concern
-      2. Brief helpful information
-      3. Suggestion to take relevant tests or connect with therapists
-      4. Encouraging tone
-      
-      Keep response under 150 words and be supportive.`;
+      const prompt = userMessage;
 
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, language }),
       });
 
       const data = await response.json();
@@ -283,7 +274,6 @@ export default function AISearchChatFixed() {
               "Write whatever is on your mind..."
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
-            dir={currentLanguage === "fa" ? "rtl" : "ltr"}
           />
           <motion.button
             whileHover={{ scale: 1.05 }}

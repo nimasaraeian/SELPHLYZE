@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import StartConfirm from "@/components/StartConfirm";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { translateArray } from "@/utils/i18nTest";
 
@@ -27,7 +26,6 @@ export default function PersonalityTestPage() {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const router = useRouter();
   const { language } = useLanguage();
-  const [confirmOpen, setConfirmOpen] = useState(true);
 
   const [tQuestions, setTQuestions] = useState<string[]>(questions.map(q => q.text));
   const [tOptions, setTOptions] = useState<string[]>(options);
@@ -55,18 +53,29 @@ export default function PersonalityTestPage() {
   };
 
   const handleSubmit = async () => {
-    localStorage.setItem("testAnswers", JSON.stringify({ answers, language }));
+    try {
+      localStorage.setItem("testAnswers", JSON.stringify({ answers, language }));
+      // Save to Supabase if authed
+      const { supabase } = await import("@/app/lib/supabaseClient");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from('test_results').insert({
+          user_id: session.user.id,
+          test_slug: 'personality-psychology',
+          test_name: 'Personality Psychology',
+          score: null,
+          payload: { answers },
+          started_at: null,
+          finished_at: new Date().toISOString()
+        });
+      }
+    } catch {}
     router.push("/analysis");
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-950 via-purple-900 to-indigo-800 p-8 text-white">
-      <StartConfirm
-        open={confirmOpen}
-        language={language}
-        onConfirm={() => setConfirmOpen(false)}
-        onCancel={() => router.push('/tests')}
-      />
+      {/* Start modal removed per request */}
       <h1 className="text-4xl font-extrabold text-cyan-300 mb-8 drop-shadow-lg">
         Personality Test
       </h1>

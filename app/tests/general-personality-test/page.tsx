@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { translateArray } from "@/utils/i18nTest";
-import StartConfirm from "@/components/StartConfirm";
 import { useLanguage } from "@/providers/LanguageProvider";
 
 type DescriptiveOption = {
@@ -415,7 +414,6 @@ const OPEN_Q31_35: OpenEndedItem[] = [
 
 export default function GeneralPersonalityTestPage() {
   const { language } = useLanguage();
-  const [confirmOpen, setConfirmOpen] = useState(true);
   const [tScenario1to15, setTScenario1to15] = useState<ScenarioItem[]>(SCENARIO_Q1_15);
   const [tScenarioLikert16to25, setTScenarioLikert16to25] = useState<ScenarioLikertItem[]>(SCENARIO_LIKERT_Q16_25);
   const [tLikert26to30, setTLikert26to30] = useState<LikertOnlyItem[]>(LIKERT_Q26_30);
@@ -443,7 +441,7 @@ export default function GeneralPersonalityTestPage() {
       }
       // Q1-15
       const prompts1to15 = SCENARIO_Q1_15.map(q => q.prompt);
-      const options1to15 = SCENARIO_Q1_15.flatMap(q => q.options.map(o => o.text));
+      const options1to15 = SCENARIO_Q1_15.flatMap(q => q.options.map(o => o.text || ""));
       const [tp1, to1] = await Promise.all([
         translateArray(prompts1to15, lang),
         translateArray(options1to15, lang),
@@ -515,7 +513,24 @@ export default function GeneralPersonalityTestPage() {
         "selphlyze_general_personality_v1",
         JSON.stringify({ responses, meta: { startTs, endTs, durationMs }, language })
       );
-      alert("Responses saved. Analysis coming soon.");
+      (async () => {
+        try {
+          const { supabase } = await import("@/app/lib/supabaseClient");
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await supabase.from('test_results').insert({
+              user_id: session.user.id,
+              test_slug: 'general-personality-test',
+              test_name: 'General Personality Test',
+              score: null,
+              payload: { responses, meta: { startTs, endTs, durationMs }, language },
+              started_at: startTs ? new Date(startTs).toISOString() : null,
+              finished_at: new Date().toISOString()
+            });
+          }
+        } catch {}
+      })();
+      alert("Responses saved.");
     } catch {}
   };
 
@@ -586,12 +601,7 @@ export default function GeneralPersonalityTestPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-20 px-6">
       {/* Start Confirm */}
-      <StartConfirm
-        open={confirmOpen}
-        language={language}
-        onConfirm={() => { setStartTs(Date.now()); setConfirmOpen(false); }}
-        onCancel={() => history.back()}
-      />
+      {/* Start modal removed per request */}
 
       <div className="max-w-5xl mx-auto space-y-10">
         <h1 className="text-4xl font-extrabold text-center bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">

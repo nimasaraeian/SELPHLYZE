@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+// Supabase may be unavailable in some environments; we'll lazy-load it
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, 
@@ -31,6 +32,7 @@ import {
   Plus,
   Trash2
 } from "lucide-react";
+import ProfileDashboard from "@/components/ProfileDashboard";
 
 type UserType = "therapist" | "client" | null;
 
@@ -78,60 +80,196 @@ interface UserProfile {
 export default function ProfilePage() {
   const [userType, setUserType] = useState<UserType>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Sample data - در حالت واقعی از API یا localStorage می‌آید
+  // Load or create profile on auth (lazy supabase)
   useEffect(() => {
-    const sampleProfile: UserProfile = {
-      id: "user-123",
-      name: "Dr. Nima Saraeian",
-      email: "nima@selphlyze.com",
-      avatar: "/image/nima-pic.png",
-      userType: "therapist",
-      location: "Tehran, Iran",
-      joinDate: "2023-01-15",
-      bio: "Experienced clinical psychologist specializing in AI-powered psychological assessment and digital mental health solutions.",
-      languages: ["Persian", "English", "Arabic"],
-      title: "Clinical Psychologist & AI Researcher",
-      specializations: ["Cognitive Behavioral Therapy", "Digital Psychology", "AI Assessment"],
-      experience: "8 years",
-      credentials: ["PhD Clinical Psychology", "AI Psychology Certified", "CBT Specialist"],
-      consultationCode: "NS-2024-TEH",
-      hourlyRate: 150,
-      currency: "USD",
-      rating: 4.9,
-      totalClients: 247,
-      completedSessions: 1523,
-      availability: true,
-      workingHours: {
-        start: "09:00",
-        end: "18:00",
-        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    const init = async () => {
+      let supabase: any = null;
+      try { supabase = (await import("@/app/lib/supabaseClient")).supabase; } catch {}
+      if (!supabase) { setProfile(null); return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { return; }
+      const user = session.user;
+      setUserId(user.id);
+      // load
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      if (!p) {
+        // create default profile
+        const insert = {
+          id: user.id,
+          full_name: user.email?.split('@')[0] || 'User',
+          avatar_url: '',
+          bio: '',
+          location: '',
+          languages: ['English'],
+          user_type: 'client',
+        } as any;
+        await supabase.from('profiles').insert(insert);
+      }
+      const { data: p2 } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      if (p2) {
+        const mapped: UserProfile = {
+          id: p2.id,
+          name: p2.full_name || user.email || 'User',
+          email: user.email || '',
+          avatar: p2.avatar_url || '',
+          userType: (p2.user_type as UserType) || 'client',
+          location: p2.location || '',
+          joinDate: user.created_at || new Date().toISOString(),
+          bio: p2.bio || '',
+          languages: Array.isArray(p2.languages) ? p2.languages : [],
+          therapistHistory: Array.isArray(p2.therapists) ? p2.therapists : [],
+          testResults: [],
+        };
+        setProfile(mapped);
+        setUserType(mapped.userType);
+        // load test results
+        const { data: results } = await supabase.from('test_results').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+        if (results) {
+          setProfile((prev) => prev ? ({ ...prev, testResults: results.map((r: any) => ({ testName: r.test_name || r.test_slug, score: Number(r.score ?? 0), date: new Date(r.finished_at || r.created_at).toLocaleString() })) }) : prev);
+        }
       }
     };
-    setProfile(sampleProfile);
-    setUserType(sampleProfile.userType);
+    init();
   }, []);
 
-  const handleSaveProfile = () => {
-    setIsEditing(false);
-    // اینجا باید API call برای ذخیره اطلاعات باشد
-    console.log("Profile saved:", profile);
+  // Realtime updates for test_results so charts are always live
+  useEffect(() => {
+    const subscribe = async () => {
+      if (!userId) return;
+      try {
+        const supabase = (await import("@/app/lib/supabaseClient")).supabase;
+        const channel = supabase
+          .channel("realtime-test-results")
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'test_results', filter: `user_id=eq.${userId}` },
+            async () => {
+              const { data: results } = await supabase
+                .from('test_results')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+              if (results) {
+                setProfile((prev) => prev ? ({
+                  ...prev,
+                  testResults: results.map((r: any) => ({
+                    testName: r.test_name || r.test_slug,
+                    score: Number(r.score ?? 0),
+                    date: new Date(r.finished_at || r.created_at).toLocaleString(),
+                  }))
+                }) : prev);
+              }
+            }
+          )
+          .subscribe();
+
+        return () => {
+          try { supabase.removeChannel(channel); } catch {}
+        };
+      } catch {}
+    };
+
+    const cleanupPromise = subscribe();
+    return () => {
+      // ensure cleanup awaited if provided
+      Promise.resolve(cleanupPromise).catch(() => {});
+    };
+  }, [userId]);
+
+  // Load saved module results (e.g., Synclyze) from localStorage
+  const [synclyzeResult, setSynclyzeResult] = useState<any | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem('synclyzeResult');
+      if (raw) setSynclyzeResult(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!profile) return;
+    const supabase = (await import("@/app/lib/supabaseClient")).supabase;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const user = session.user;
+    const filePath = `${user.id}/${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const url = data.publicUrl;
+      await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+      setProfile({ ...profile, avatar: url });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsEditing(false);
+      const supabase = (await import("@/app/lib/supabaseClient")).supabase;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !profile) return;
+      await supabase.from('profiles').update({ full_name: profile.name, bio: profile.bio, location: profile.location }).eq('id', session.user.id);
+    } catch {}
   };
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black flex items-center justify-center">
-        <div className="text-center">
+      <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Guest header */}
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-white">Loading profile...</p>
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-3xl p-8 border border-slate-700 mb-8"
+          >
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-slate-800 grid place-items-center">
+                <User className="w-10 h-10 text-gray-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Guest</h1>
+                <p className="text-gray-400 text-sm">Public view</p>
+              </div>
+            </div>
+          </motion.div>
+          <ProfileDashboard name="Guest" testResults={[]} />
+
+          {/* Guest can still view module results saved locally */}
+          <div className="mt-8 bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-xl font-bold text-white">Module Results</h3>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                <div className="text-sm text-slate-400 mb-1">Synclyze Code</div>
+                <div className="inline-block px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-teal-300 font-mono">
+                  {synclyzeResult?.code || '—'}
+                </div>
+                <div className="mt-4">
+                  {synclyzeResult?.scores ? (
+                    <SimpleBars scores={synclyzeResult.scores} />
+                  ) : (
+                    <p className="text-slate-400 text-sm">Complete the Synclyze module to see your scores.</p>
+                  )}
+                </div>
+              </div>
+              <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                <div className="text-sm text-slate-400 mb-1">Radar Overview</div>
+                {synclyzeResult?.scores ? (
+                  <MiniRadar scores={synclyzeResult.scores} />
+                ) : (
+                  <div className="h-48 grid place-items-center text-slate-500 text-sm">No data</div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -163,6 +301,16 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="absolute -bottom-2 -right-2 w-10 h-10 bg-teal-600 hover:bg-teal-700 rounded-full flex items-center justify-center border-4 border-slate-900"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = () => {
+                    const f = (input.files && input.files[0]) as File | undefined;
+                    if (f) handleAvatarUpload(f);
+                  };
+                  input.click();
+                }}
               >
                 <Camera className="w-4 h-4 text-white" />
               </motion.button>
@@ -229,13 +377,17 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
+        {/* Onboarding section temporarily disabled per request */}
+
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-4 mb-8">
           {[
+            { id: "dashboard", label: "Dashboard", icon: TrendingUp },
             { id: "profile", label: "Profile", icon: User },
             { id: "settings", label: "Settings", icon: Settings },
             { id: "security", label: "Security", icon: Shield },
             { id: "notifications", label: "Notifications", icon: Bell },
+            { id: "results", label: "Results", icon: Zap },
           ].map((tab) => (
             <motion.button
               key={tab.id}
@@ -263,6 +415,13 @@ export default function ProfilePage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
+            {/* Dashboard Tab */}
+            {activeTab === "dashboard" && (
+              <div className="mb-8">
+                <ProfileDashboard name={profile.name} testResults={profile.testResults || []} />
+              </div>
+            )}
+
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <div className="grid gap-8 lg:grid-cols-2">
@@ -455,6 +614,48 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Results Tab */}
+            {activeTab === "results" && (
+              <div className="grid gap-6">
+                <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Module Results</h3>
+                  {/* Synclyze summary */}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                      <div className="text-sm text-slate-400 mb-1">Synclyze Code</div>
+                      <div className="inline-block px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-teal-300 font-mono">
+                        {synclyzeResult?.code || '—'}
+                      </div>
+                      <div className="mt-4">
+                        {synclyzeResult?.scores ? (
+                          <SimpleBars scores={synclyzeResult.scores} />
+                        ) : (
+                          <p className="text-slate-400 text-sm">Complete the Synclyze module to see your scores.</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                      <div className="text-sm text-slate-400 mb-1">Radar Overview</div>
+                      {synclyzeResult?.scores ? (
+                        <MiniRadar scores={synclyzeResult.scores} />
+                      ) : (
+                        <div className="h-48 grid place-items-center text-slate-500 text-sm">No data</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-6 text-slate-400 text-xs">More modules will appear here as you complete them.</div>
+                </div>
+                {/* Final composite code box (placeholder until all modules done) */}
+                <div className="bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-700/30 rounded-2xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">Your Composite Code</h3>
+                  <p className="text-slate-300 text-sm mb-3">This unlocks when you complete all modules.</p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-400 font-mono">
+                    PARTIAL: {synclyzeResult?.code ? synclyzeResult.code.replace('SYNC(', 'SYNC(…+') : 'SYNC(…+?)'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
@@ -603,9 +804,61 @@ export default function ProfilePage() {
               <Save className="w-5 h-5" />
               Save Changes
             </motion.button>
+            <div className="mt-3">
+              <button onClick={async()=>{ const s = (await import("@/app/lib/supabaseClient")).supabase; await s.auth.signOut(); location.reload(); }} className="text-sm text-gray-400 hover:text-white">Sign out</button>
+            </div>
           </motion.div>
         )}
       </div>
     </main>
+  );
+}
+
+function SimpleBars({ scores }: { scores: { attachment: number; eq: number; conflict: number; empathy: number; language: number } }) {
+  const items = [
+    { k: 'attachment', l: 'Attachment', v: scores.attachment },
+    { k: 'eq', l: 'Emotional Intelligence', v: scores.eq },
+    { k: 'conflict', l: 'Conflict Style', v: scores.conflict },
+    { k: 'empathy', l: 'Empathy Accuracy', v: scores.empathy },
+    { k: 'language', l: 'Language Style', v: scores.language },
+  ];
+  return (
+    <div className="space-y-2">
+      {items.map(it => (
+        <div key={it.k}>
+          <div className="flex justify-between text-xs text-slate-400 mb-1">
+            <span>{it.l}</span>
+            <span>{it.v}/5</span>
+          </div>
+          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" style={{ width: `${Math.max(2, Math.min(100, (it.v/5)*100))}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MiniRadar({ scores }: { scores: { attachment: number; eq: number; conflict: number; empathy: number; language: number } }) {
+  const labels = ["Attach", "EQ", "Conflict", "Empathy", "Lang"];
+  const values = [scores.attachment, scores.eq, scores.conflict, scores.empathy, scores.language];
+  const max = 5;
+  const cx = 120, cy = 90;
+  const points = values.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
+    const r = (v / max) * 70;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    return `${x},${y}`;
+  });
+  return (
+    <svg viewBox="0 0 240 180" className="w-full h-48">
+      <g stroke="#334155" strokeOpacity="0.6" fill="none">
+        {[20,40,60,70].map(r => <circle key={r} cx={cx} cy={cy} r={r} />)}
+      </g>
+      <polygon points={points.join(' ')} fill="#10b981" fillOpacity="0.25" stroke="#10b981" strokeWidth={2} />
+      {points.map((p,i)=>{ const [x,y]=p.split(',').map(Number); return <circle key={i} cx={x} cy={y} r={3} fill="#22d3ee" />})}
+      {labels.map((t,i)=>{ const a=(Math.PI*2*i)/labels.length - Math.PI/2; const x=cx+80*Math.cos(a); const y=cy+80*Math.sin(a); return <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill="#cbd5e1" fontSize="10">{t}</text>; })}
+    </svg>
   );
 }

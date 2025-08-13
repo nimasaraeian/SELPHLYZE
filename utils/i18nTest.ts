@@ -75,7 +75,23 @@ const FALLBACK_DICTIONARY: Record<SupportedLanguage, Record<string, string>> = {
     "What motivates you most to achieve your goals?": "¿Qué te motiva más para alcanzar tus objetivos?",
     "How do you react to unexpected changes?": "¿Cómo reaccionas ante cambios inesperados?",
   },
-  ar: {}, tr: {}, ru: {}, ko: {}, hi: {}, pt: {}, en: {},
+  tr: {
+    // Likert options (TR)
+    "Strongly Disagree": "Kesinlikle Katılmıyorum",
+    "Disagree": "Katılmıyorum",
+    "Somewhat Disagree": "Kısmen Katılmıyorum",
+    "Neutral": "Nötr",
+    "Somewhat Agree": "Kısmen Katılıyorum",
+    "Agree": "Katılıyorum",
+    "Strongly Agree": "Kesinlikle Katılıyorum",
+    // Personality-psychology sample questions (TR)
+    "How do you feel when meeting new people?": "Yeni insanlarla tanışırken nasıl hissedersiniz?",
+    "How do you usually react in stressful situations?": "Stresli durumlarda genelde nasıl tepki verirsiniz?",
+    "How do you approach solving a new problem?": "Yeni bir problemi çözmeye nasıl yaklaşırsınız?",
+    "What motivates you most to achieve your goals?": "Hedeflerinize ulaşmanız için sizi en çok ne motive eder?",
+    "How do you react to unexpected changes?": "Beklenmedik değişikliklere nasıl tepki verirsiniz?",
+  },
+  ar: {}, ru: {}, ko: {}, hi: {}, pt: {}, en: {},
 };
 
 function getCacheKey(lang: SupportedLanguage, text: string) {
@@ -113,17 +129,25 @@ export async function translateArray(texts: string[], language: SupportedLanguag
   const missingIdx: number[] = [];
   const missingTexts: string[] = [];
   cached.forEach((v, i) => { if (v === null) { missingIdx.push(i); missingTexts.push(texts[i]); } });
+
+  // 2) fetch missing in chunks to avoid model limits
   let translatedMissing: string[] = [];
   try {
     if (missingTexts.length > 0) {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texts: missingTexts, language }),
-      });
-      if (!res.ok) throw new Error("translate API failed");
-      const data = await res.json();
-      translatedMissing = Array.isArray(data.translations) ? data.translations : missingTexts;
+      const batches = chunk(missingTexts, 40);
+      const out: string[] = [];
+      for (const batch of batches) {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ texts: batch, language }),
+        });
+        if (!res.ok) throw new Error("translate API failed");
+        const data = await res.json();
+        const arr = Array.isArray(data.translations) ? data.translations : batch;
+        out.push(...arr);
+      }
+      translatedMissing = out;
       // If model returned identical texts, attempt fallback dictionary for those
       const dict = FALLBACK_DICTIONARY[language] || {} as Record<string, string>;
       translatedMissing = translatedMissing.map((t, i) => {
@@ -136,12 +160,12 @@ export async function translateArray(texts: string[], language: SupportedLanguag
   } catch {
     // Offline fallback dictionary for all
     const dict = FALLBACK_DICTIONARY[language] || {} as Record<string, string>;
-    return texts.map((t) => {
-      const cachedVal = cached[texts.indexOf(t)];
-      return (cachedVal as string) || dict[t] || t;
+    return texts.map((t, i) => {
+      const c = cached[i];
+      return (c as string) || dict[t] || t;
     });
   }
-  // Merge cached + fetched
+  // 3) Merge cached + fetched
   const result = texts.map((src, i) => cached[i] ?? translatedMissing[missingIdx.indexOf(i)] ?? src);
   return result;
 }

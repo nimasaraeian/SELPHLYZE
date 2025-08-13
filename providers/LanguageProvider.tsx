@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-export type AppLanguage = "en" | "fa" | "es";
-const FORCE_ENGLISH = true;
+export type AppLanguage = "en" | "fa" | "es" | "tr" | "fr";
+const FORCE_ENGLISH = false;
 
 type LanguageContextValue = {
   language: AppLanguage;
@@ -17,14 +17,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>("en");
 
   const setLanguage = (lang: AppLanguage) => {
-    if (FORCE_ENGLISH) {
-      setLanguageState("en");
-    } else {
-      setLanguageState(lang);
-    }
+    const next = FORCE_ENGLISH ? "en" : lang;
+    setLanguageState(next);
     if (typeof window !== "undefined") {
       try {
-        localStorage.setItem("globalLanguage", FORCE_ENGLISH ? "en" : lang);
+        localStorage.setItem("globalLanguage", next);
       } catch {}
     }
   };
@@ -40,24 +37,25 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem("globalLanguage") as AppLanguage | null;
-      if (saved === "en" || saved === "fa" || saved === "es") {
-        setLanguageState(saved);
+      if (saved && ["en","fa","es","tr","fr"].includes(saved)) {
+        setLanguageState(saved as AppLanguage);
         return;
       }
-      const browser2 = navigator.language.substring(0, 2);
-      const normalized: AppLanguage = browser2 === "fa" ? "fa" : browser2 === "es" ? "es" : "en";
+      const browser2 = navigator.language.substring(0, 2) as string;
+      const normalized: AppLanguage = browser2 === "fa" ? "fa" : browser2 === "es" ? "es" : browser2 === "tr" ? "tr" : browser2 === "fr" ? "fr" : "en";
       setLanguageState(normalized);
     } catch {}
   }, []);
 
+  // Keep layout LTR for all languages; only text changes per language
   useEffect(() => {
     if (typeof document === "undefined") return;
     const html = document.documentElement;
     html.lang = language;
-    html.dir = language === "fa" ? "rtl" : "ltr";
+    html.dir = "ltr";
   }, [language]);
 
-  const isRtl = useMemo(() => language === "fa", [language]);
+  const isRtl = useMemo(() => false, [language]);
 
   const value: LanguageContextValue = useMemo(() => ({ language, setLanguage, isRtl }), [language]);
 
@@ -72,5 +70,11 @@ export function useLanguage(): LanguageContextValue {
 
 export function normalizeToAppLanguage(input: string): AppLanguage {
   if (FORCE_ENGLISH) return "en";
-  return input === "fa" ? "fa" : input === "es" ? "es" : "en";
+  switch (input) {
+    case "fa": return "fa";
+    case "es": return "es";
+    case "tr": return "tr";
+    case "fr": return "fr";
+    default: return "en";
+  }
 }

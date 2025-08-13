@@ -14,6 +14,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OPENAI_API_KEY is missing");
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
     const system = `You are a professional translator. Translate the given array of UI strings into the target language.
 Strict requirements:
@@ -32,7 +33,7 @@ Strict requirements:
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model,
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },

@@ -12,16 +12,20 @@ import {
   User, 
   Mail,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Headphones,
+  BookOpen
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Tests", href: "/tests", icon: TestTube },
-  { name: "Psychology", href: "/psychology", icon: Brain },
+  { name: "Articles", href: "/psy-articles", icon: Brain },
   { name: "Modules", href: "/modules", icon: Sparkles },
   { name: "Therapists", href: "/therapists", icon: Users },
+  { name: "Podcasts", href: "/podcasts", icon: Headphones },
+  { name: "Books", href: "/books", icon: BookOpen },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Contact", href: "/contact", icon: Mail },
 ];

@@ -165,22 +165,7 @@ export default function SimpleAISearch() {
         pt: "Portuguese",
       };
 
-      const prompt = `You are a helpful AI psychology assistant.
-      User profile context: {
-        name: ${displayName || 'Guest'},
-        ageRange: ${ageRange || 'unknown'},
-        gender: ${gender || 'unspecified'}
-      }
-      Address the user by name (${displayName || 'Friend'}) in the first sentence.
-      User said: "${userMessage}".
-      Language: ${languageNames[language]}.
-      
-      Please respond in ${languageNames[language]} with:
-      1. Empathetic acknowledgment
-      2. Brief helpful information
-      3. Suggestion to take tests or find therapists
-      
-      Keep response under 100 words and be supportive.`;
+      const prompt = userMessage;
 
       const response = await fetch("/api/analyze", {
         method: "POST",

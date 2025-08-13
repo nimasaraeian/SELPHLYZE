@@ -181,22 +181,12 @@ export default function AISearchChat() {
         ko: "Korean", hi: "Hindi", tr: "Turkish", pt: "Portuguese", nl: "Dutch"
       };
 
-      const prompt = `You are a helpful AI psychology assistant. The user said: "${userMessage}". 
-      Language detected: ${language}. 
-      Relevant sections found: ${routing.map(r => r.type).join(", ")}.
-      
-      Please respond in ${languageNames[language]} with:
-      1. Empathetic acknowledgment of their concern
-      2. Brief helpful information
-      3. Suggestion to take relevant tests or connect with therapists
-      4. Encouraging tone
-      
-      Keep response under 150 words and be supportive. Use natural, conversational language.`;
+      const prompt = userMessage;
 
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, language }),
       });
 
       const data = await response.json();
@@ -306,7 +296,6 @@ export default function AISearchChat() {
               "Write whatever is on your mind..."
             }
             className="flex-1 px-4 py-5 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
-            dir={currentLanguage === "fa" || currentLanguage === "ar" ? "rtl" : "ltr"}
           />
           <motion.button
             whileHover={{ scale: 1.05 }}

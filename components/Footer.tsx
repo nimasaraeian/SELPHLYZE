@@ -18,7 +18,7 @@ const footerLinks = {
     { name: "Psychology Tests", href: "/tests" },
     { name: "AI Modules", href: "/modules" },
     { name: "Expert Therapists", href: "/therapists" },
-    { name: "Psychology Articles", href: "/psychology" }
+    { name: "Psychology Articles", href: "/psy-articles" }
   ],
   company: [
     { name: "About Us", href: "/about" },

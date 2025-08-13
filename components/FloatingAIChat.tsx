@@ -94,7 +94,7 @@ export default function FloatingAIChat() {
     const pageContexts: Record<string, string> = {
       "/": "home page",
       "/tests": "psychology tests section",
-      "/psychology": "psychology articles section", 
+      "/psy-articles": "psychology articles section", 
       "/modules": "AI psychology modules section",
       "/therapists": "therapist network section",
       "/profile": "user profile section"
@@ -179,7 +179,7 @@ export default function FloatingAIChat() {
     if (articleKeywords.some(keyword => lowercaseQuery.includes(keyword))) {
       suggestions.push({
         text: getTranslation("articles", language, "sections"),
-        action: "/psychology",
+        action: "/psy-articles",
 
       });
     }
@@ -491,8 +491,8 @@ export default function FloatingAIChat() {
                                   if (suggestion.action === "/tests") IconComponent = TestTube;
                                   else if (suggestion.action === "/therapists") IconComponent = Users;
                                   else if (suggestion.action === "/modules") IconComponent = Brain;
-                                  else if (suggestion.action === "/psychology") IconComponent = BookOpen;
-                                  else if (suggestion.action === "/profile") IconComponent = User;
+          else if (suggestion.action === "/psy-articles") IconComponent = BookOpen;
+         else if (suggestion.action === "/profile") IconComponent = User;
                                   else if (suggestion.action === "/") IconComponent = Home;
                                   else IconComponent = Heart;
 

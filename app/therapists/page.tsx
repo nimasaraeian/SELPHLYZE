@@ -24,19 +24,42 @@ import VideoConsultation from "@/components/VideoConsultation";
 import TherapistDashboard from "@/components/TherapistDashboard";
 
 export default function TherapistsNetworkPage() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [userType, setUserType] = useState<"therapist" | "client" | null>(null);
+  const [activeTab, setActiveTab] = useState("discover");
+  const [userType, setUserType] = useState<"therapist" | null>("therapist");
+  const [selectedCountry, setSelectedCountry] = useState<string | "All">("All");
+
+  const therapistTypes = [
+    "Psychotherapist",
+    "Psychologist",
+    "Psychoanalyst",
+    "Psychiatrist",
+    "Counselor",
+    "Clinical Psychologist",
+    "Forensic Psychologist",
+    "Occupational Psychologist",
+    "School Psychologist",
+    "Neuropsychologist",
+    "Sports Psychologist",
+    "Child Psychologist",
+    "Developmental Psychologist",
+    "Health Psychologist",
+    "Rehabilitation Psychologist",
+  ];
+
+  const allCountries = [
+    "United States", "Canada", "United Kingdom", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway", "Denmark", "Finland", "Poland", "Czech Republic", "Russia", "Turkey", "Iran", "UAE", "Saudi Arabia", "India", "Pakistan", "China", "Japan", "South Korea", "Singapore", "Australia", "New Zealand", "Brazil", "Argentina", "Mexico", "South Africa", "Egypt", "Nigeria", "Kenya"
+  ];
 
   const therapistProfiles = [
     {
       id: 1,
-      name: "Dr. Sarah Johnson",
+      name: "Sarah Johnson",
       specialty: "Cognitive Behavioral Therapy",
-      location: "New York, USA",
+      location: "New York, United States",
       rating: 4.9,
       experience: "8 years",
       languages: ["English", "Spanish"],
-      avatar: "/avatars/therapist-1.jpg",
+      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=640&auto=format&fit=crop",
       consultationCode: "SJ-2024-NYC",
       price: "$120/session",
       available: true,
@@ -44,13 +67,13 @@ export default function TherapistsNetworkPage() {
     },
     {
       id: 2,
-      name: "Dr. Ahmad Hosseini",
+      name: "Ahmad Hosseini",
       specialty: "Family & Marriage Therapy",
       location: "Tehran, Iran",
       rating: 4.8,
       experience: "12 years",
       languages: ["Persian", "English", "Arabic"],
-      avatar: "/avatars/therapist-2.jpg",
+      avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=640&auto=format&fit=crop",
       consultationCode: "AH-2024-TEH",
       price: "$80/session",
       available: true,
@@ -58,13 +81,13 @@ export default function TherapistsNetworkPage() {
     },
     {
       id: 3,
-      name: "Dr. Emma Rodriguez",
+      name: "Emma Rodriguez",
       specialty: "Child & Adolescent Psychology",
       location: "Barcelona, Spain",
       rating: 5.0,
       experience: "6 years",
       languages: ["Spanish", "English", "Catalan"],
-      avatar: "/avatars/therapist-3.jpg",
+        avatar: "/avatars/dr-emma.jpg",
       consultationCode: "ER-2024-BCN",
       price: "€90/session",
       available: false,
@@ -113,43 +136,7 @@ export default function TherapistsNetworkPage() {
           </p>
         </header>
 
-        {/* User Type Selection */}
-        {!userType && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-2xl mx-auto mb-12 bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700"
-          >
-            <h2 className="text-2xl font-bold text-center mb-6 text-teal-300">Join Our Community</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setUserType("therapist")}
-                className="p-6 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl text-center group hover:shadow-xl transition-all"
-              >
-                <Users className="w-12 h-12 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold mb-2">I'm a Therapist</h3>
-                <p className="text-emerald-100 text-sm">
-                  Join our professional network, share expertise, and connect with colleagues worldwide
-                </p>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setUserType("client")}
-                className="p-6 bg-gradient-to-br from-blue-600 to-cyan-700 rounded-xl text-center group hover:shadow-xl transition-all"
-              >
-                <Heart className="w-12 h-12 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold mb-2">I'm seeking Support</h3>
-                <p className="text-blue-100 text-sm">
-                  Find qualified therapists worldwide, book consultations, and begin your healing journey
-                </p>
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
+        {/* Removed patient/client selection; page is therapist-only */}
 
         {/* Navigation Tabs */}
         {userType && (
@@ -197,93 +184,68 @@ export default function TherapistsNetworkPage() {
             {/* Discover Therapists Tab */}
             {activeTab === "discover" && (
               <div>
-                <div className="mb-8">
-                  <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-teal-300">Global Therapist Directory</h2>
-                    <div className="flex gap-4">
-                      <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Search by specialty, location..."
-                          className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-teal-500 focus:outline-none"
-                        />
-                      </div>
-                      <select className="px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none">
-                        <option value="">All Specialties</option>
-                        <option value="cbt">CBT</option>
-                        <option value="trauma">Trauma Therapy</option>
-                        <option value="family">Family Therapy</option>
-                        <option value="child">Child Psychology</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="grid grid-cols-12 gap-6">
+                  
 
-                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    {therapistProfiles.map((therapist) => (
+                  {/* Center: List with Country dropdown (LinkedIn-style) */}
+                  <section className="col-span-12 md:col-span-12">
+					<div className="flex items-center justify-between mb-4">
+						<h2 className="text-2xl font-bold text-teal-300">Global Therapist Directory</h2>
+						<div className="flex items-center gap-2">
+							<Globe className="w-4 h-4 text-slate-400" />
+							<span className="text-slate-300 text-sm">Countries</span>
+							<select
+								value={selectedCountry}
+								onChange={(e)=>setSelectedCountry(e.target.value as any)}
+								className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
+							>
+								<option value="All">All</option>
+								{[...allCountries].sort().map(c => (
+									<option key={c} value={c}>{c}</option>
+								))}
+							</select>
+						</div>
+					</div>
+                    <div className="grid gap-4 md:grid-cols-1">
+                       {therapistProfiles
+                        .filter(t => selectedCountry === 'All' || t.location.endsWith(selectedCountry))
+                        .map((therapist) => (
                       <motion.div
                         key={therapist.id}
-                        whileHover={{ scale: 1.02 }}
-                        className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700 hover:border-teal-500/50 transition-all"
+                        whileHover={{ scale: 1.01 }}
+                        className="bg-slate-900/60 rounded-xl border border-slate-700 hover:border-teal-500/50 transition-all p-4 flex items-center gap-4"
                       >
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-2xl">
-                            👨‍⚕️
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-white mb-1">{therapist.name}</h3>
-                            <p className="text-teal-300 text-sm mb-2">{therapist.specialty}</p>
-                            <div className="flex items-center gap-2 text-gray-400 text-xs">
-                              <MapPin className="w-3 h-3" />
-                              {therapist.location}
-                            </div>
-                          </div>
-                          <div className={`w-3 h-3 rounded-full ${therapist.available ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                        <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+                          {therapist.avatar ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={therapist.avatar} alt={therapist.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>👨‍⚕️</span>
+                          )}
                         </div>
-
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Star className="w-4 h-4 text-yellow-400" />
-                            <span className="text-white">{therapist.rating}</span>
-                            <span className="text-gray-400">({therapist.experience})</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-bold text-white truncate">Dr. {therapist.name}</h3>
+                            <div className={`w-2 h-2 rounded-full ${therapist.available ? 'bg-green-400' : 'bg-red-400'}`}></div>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <Globe className="w-4 h-4" />
-                            {therapist.languages.join(", ")}
-                          </div>
-                          <div className="text-sm text-teal-300 font-medium">{therapist.price}</div>
-                        </div>
-
-                        <div className="mb-4">
-                          <div className="text-xs text-gray-400 mb-2">Credentials:</div>
-                          <div className="flex flex-wrap gap-1">
-                            {therapist.credentials.map((cred, idx) => (
-                              <span key={idx} className="px-2 py-1 bg-slate-700 rounded text-xs text-gray-300">
-                                {cred}
-                              </span>
-                            ))}
+                          <div className="text-sm text-teal-300 truncate">{therapist.specialty}</div>
+                          <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate">{therapist.location}</span>
                           </div>
                         </div>
-
-                        <div className="space-y-2">
-                          <div className="text-xs text-gray-400">Consultation Code:</div>
-                          <div className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
-                            <code className="text-teal-300 font-mono text-sm flex-1">{therapist.consultationCode}</code>
-                            <button className="text-xs text-gray-400 hover:text-white transition-colors">Copy</button>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2 mt-4">
-                          <button className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                            Book Session
-                          </button>
-                          <button className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors">
-                            <MessageCircle className="w-4 h-4" />
-                          </button>
+                        <div className="hidden md:flex items-center gap-4 text-xs text-gray-400">
+                          <div className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-400" /><span className="text-white">{therapist.rating}</span></div>
+                          <div className="flex items-center gap-1"><Globe className="w-4 h-4" /><span>{therapist.languages.join(', ')}</span></div>
+                          <div className="text-teal-300 font-medium">{therapist.price}</div>
+                          <button className="px-3 py-2 bg-teal-600 hover:bg-teal-700 rounded-lg text-white">Connect</button>
                         </div>
                       </motion.div>
                     ))}
-                  </div>
+                    </div>
+                  </section>
+
+                  {/* Right column removed for simpler LinkedIn-style layout */}
                 </div>
               </div>
             )}
@@ -450,7 +412,7 @@ export default function TherapistsNetworkPage() {
             {activeTab === "profile" && (
               <div className="max-w-4xl mx-auto">
                 <h2 className="text-2xl font-bold text-teal-300 text-center mb-8">
-                  {userType === "therapist" ? "Therapist Profile" : "Client Profile"}
+                  Therapist Profile
                 </h2>
                 
                 <div className="grid gap-8 lg:grid-cols-3">
@@ -458,18 +420,15 @@ export default function TherapistsNetworkPage() {
                     <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
                       <div className="text-center mb-6">
                         <div className="w-24 h-24 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">
-                          {userType === "therapist" ? "👨‍⚕️" : "😊"}
+                          {"👨‍⚕️"}
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">
-                          {userType === "therapist" ? "Dr. Your Name" : "Your Name"}
+                          Dr. Your Name
                         </h3>
-                        {userType === "therapist" && (
-                          <p className="text-teal-300">Clinical Psychologist</p>
-                        )}
+                        <p className="text-teal-300">Clinical Psychologist</p>
                       </div>
 
-                      {userType === "therapist" && (
-                        <div className="space-y-4">
+                      <div className="space-y-4">
                           <div className="text-center p-4 bg-teal-900/20 rounded-lg border border-teal-700">
                             <div className="text-xs text-gray-400 mb-1">Your Consultation Code</div>
                             <code className="text-teal-300 font-mono font-bold">YN-2024-LOC</code>
@@ -485,8 +444,7 @@ export default function TherapistsNetworkPage() {
                               <div className="text-xs text-gray-400">Rating</div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
@@ -512,8 +470,7 @@ export default function TherapistsNetworkPage() {
                           </div>
                         </div>
 
-                        {userType === "therapist" && (
-                          <>
+                        <>
                             <div>
                               <label className="block text-sm font-medium text-gray-300 mb-2">Specializations</label>
                               <select className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none">
@@ -551,8 +508,7 @@ export default function TherapistsNetworkPage() {
                                 className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-teal-500 focus:outline-none resize-none"
                               ></textarea>
                             </div>
-                          </>
-                        )}
+                        </>
 
                         <button className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
                           Save Changes
