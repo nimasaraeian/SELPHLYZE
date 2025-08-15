@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, 
   X, 
-  Home, 
   Brain, 
   TestTube, 
   Users, 
@@ -18,7 +17,7 @@ import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
-  { name: "AI", href: "/", icon: Home },
+  { name: "AI", href: "/", icon: Brain },
   { name: "Social", href: "/social", icon: Users },
   { name: "Tests", href: "/tests", icon: TestTube },
   { name: "Learning", href: "/learning", icon: GraduationCap },
@@ -87,7 +86,19 @@ export default function Navbar() {
                 );
               })}
             </div>
-            <div className="absolute right-6 hidden md:block">
+            <div className="absolute right-6 hidden md:flex items-center space-x-4">
+              <Link
+                href="/auth/login"
+                className="text-white/90 hover:text-white transition-colors font-medium"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium"
+              >
+                Sign Up
+              </Link>
               <ThemeToggle />
             </div>
             
