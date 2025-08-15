@@ -8,6 +8,7 @@ import StructuredData from "@/components/StructuredData";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import UserTrackingProvider from "@/components/UserTrackingProvider";
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
@@ -79,17 +80,19 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <ThemeProvider>
           <LanguageProvider>
-            {/* Navbar */}
-            <Navbar />
+            <UserTrackingProvider>
+              {/* Navbar */}
+              <Navbar />
 
-            {/* Main Content */}
-            <main className="flex-1 pt-16">{children}</main>
+              {/* Main Content */}
+              <main className="flex-1 pt-16">{children}</main>
 
-            {/* Footer */}
-            <Footer />
+              {/* Footer */}
+              <Footer />
 
-            {/* Global AI Chat Assistant */}
-            <FloatingAIChat />
+              {/* Global AI Chat Assistant */}
+              <FloatingAIChat />
+            </UserTrackingProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

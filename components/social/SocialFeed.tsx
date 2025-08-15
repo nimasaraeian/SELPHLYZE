@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Verified } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Verified, Send, Image, Camera } from 'lucide-react';
+import { useUserTracking } from '@/hooks/useUserTracking';
 import type { Post, User } from '@/types/social';
 
 interface SocialFeedProps {
@@ -13,6 +14,10 @@ interface SocialFeedProps {
 export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [loading, setLoading] = useState(false);
+  const [newPost, setNewPost] = useState('');
+  const { getUserContext, getUserFirstName } = useUserTracking();
+  const user = getUserContext();
+  const userFirstName = getUserFirstName();
 
   // Mock data for demonstration
   const mockPosts: Post[] = [
@@ -140,6 +145,68 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     }
   }, []);
 
+  useEffect(() => {
+    // Load posts for the current user
+    if (initialPosts.length === 0) {
+      loadUserPosts();
+    }
+  }, [initialPosts]);
+
+  const loadUserPosts = () => {
+    try {
+      const savedPosts = localStorage.getItem('socialPosts');
+      if (savedPosts) {
+        const allPosts = JSON.parse(savedPosts);
+        setPosts([...allPosts, ...mockPosts]);
+      } else {
+        setPosts(mockPosts);
+      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      setPosts(mockPosts);
+    }
+  };
+
+  const createPost = () => {
+    if (!newPost.trim() || !user) return;
+
+    const post: Post = {
+      id: Date.now().toString(),
+      content: newPost,
+      timestamp: new Date().toISOString(),
+      author: {
+        id: user.id,
+        name: user.firstName ? `${user.firstName} ${user.lastName}` : user.name || 'User',
+        username: user.username || user.userCode,
+        avatarUrl: user.avatarDataUrl || 'https://i.pravatar.cc/40?img=1',
+        isVerified: user.verified || false,
+        accountType: user.accountType || 'individual'
+      },
+      engagement: {
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        isLiked: false
+      },
+      comments: []
+    };
+
+    const newPosts = [post, ...posts];
+    setPosts(newPosts);
+    
+    // Save to localStorage
+    try {
+      const savedPosts = localStorage.getItem('socialPosts');
+      const existingPosts = savedPosts ? JSON.parse(savedPosts) : [];
+      const updatedPosts = [post, ...existingPosts];
+      localStorage.setItem('socialPosts', JSON.stringify(updatedPosts));
+    } catch (error) {
+      console.error('Error saving post:', error);
+    }
+
+    setNewPost('');
+  };
+
   const handleLike = async (postId: string) => {
     setPosts(prevPosts => 
       prevPosts.map(post => 
@@ -180,19 +247,60 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Create Post Box */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 font-medium text-sm">You</span>
+      {/* Create New Post */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm"
+        >
+          <div className="flex items-start gap-4">
+            {/* User Avatar */}
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
+            </div>
+            
+            {/* Post Input */}
+            <div className="flex-1">
+              <textarea
+                value={newPost}
+                onChange={(e) => setNewPost(e.target.value)}
+                placeholder={`What's on your mind, ${userFirstName}?`}
+                className="w-full min-h-[100px] p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white"
+                maxLength={500}
+              />
+              
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-3">
+                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                    <Image className="w-5 h-5" />
+                    <span className="text-sm">Photo</span>
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors">
+                    <Camera className="w-5 h-5" />
+                    <span className="text-sm">Video</span>
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {newPost.length}/500
+                  </span>
+                  <button
+                    onClick={createPost}
+                    disabled={!newPost.trim()}
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="w-4 h-4" />
+                    Share
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <button className="w-full text-left p-3 bg-gray-50 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-              What's on your mind?
-            </button>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      )}
 
       {/* Posts */}
       {posts.map((post) => (

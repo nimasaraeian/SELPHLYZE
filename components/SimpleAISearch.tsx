@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { detectLanguage, SupportedLanguage, SUPPORTED_LANGUAGES } from "@/utils/multilingual";
 import { useLanguage, normalizeToAppLanguage } from "@/providers/LanguageProvider";
+import { useUserTracking } from "@/hooks/useUserTracking";
 
 interface ChatMessage {
   id: string;
@@ -23,6 +24,9 @@ interface ChatMessage {
 
 export default function SimpleAISearch() {
   const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguage();
+  const { getUserFirstName, isLoggedIn, trackAIConversation } = useUserTracking();
+  const userFirstName = getUserFirstName();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +121,11 @@ export default function SimpleAISearch() {
         pt: "Portuguese",
       };
 
-      const prompt = userMessage;
+      // Create personalized prompt
+      let prompt = userMessage;
+      if (isLoggedIn && userFirstName) {
+        prompt = `User: ${userFirstName} is asking: "${userMessage}". Please address them personally by their name (${userFirstName}) and provide a helpful psychology-focused response.`;
+      }
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -205,6 +213,9 @@ export default function SimpleAISearch() {
       const finalMessages = [...newMessages, aiMessage];
       setChatMessages(finalMessages);
       saveChatHistory(finalMessages);
+      
+      // Track AI conversation for user
+      trackAIConversation(searchQuery, fullAiResponse);
 
     } catch (error) {
       console.error("Search Error:", error);

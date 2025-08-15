@@ -5,11 +5,14 @@ import SimpleAISearch from "@/components/SimpleAISearch";
 import WhySection from "@/components/WhySection";
 import SocialProof from "@/components/SocialProof";
 import { getVariant } from "@/utils/ab";
+import { useUserTracking } from "@/hooks/useUserTracking";
 
 
 
 export default function Home() {
   const variant = getVariant("home_headline");
+  const { getUserFirstName, isLoggedIn } = useUserTracking();
+  
   return (
     <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       

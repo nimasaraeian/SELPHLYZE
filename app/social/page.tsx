@@ -1,12 +1,60 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, BookOpen, Calendar, Bell, Search, Plus } from 'lucide-react';
+import { Users, TrendingUp, BookOpen, Calendar, Bell, Search, Plus, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import SocialFeed from '@/components/social/SocialFeed';
+import SuggestedUsers from '@/components/social/SuggestedUsers';
+import { useUserTracking } from '@/hooks/useUserTracking';
+import { socialManager } from '@/utils/socialInteractions';
 
 export default function SocialPage() {
   const [activeTab, setActiveTab] = useState('feed');
+  const [loading, setLoading] = useState(true);
+  const { getUserContext, isLoggedIn } = useUserTracking();
+  const router = useRouter();
+  const user = getUserContext();
+
+  useEffect(() => {
+    // Check authentication
+    if (!isLoggedIn) {
+      router.push('/auth/login?redirect=/social');
+      return;
+    }
+    setLoading(false);
+  }, [isLoggedIn, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[var(--muted)]">Loading social network...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] pt-20 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <Lock className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-4">Access Restricted</h1>
+          <p className="text-[var(--muted)] mb-8">
+            Please sign in to access the psychology social network.
+          </p>
+          <button
+            onClick={() => router.push('/auth/login?redirect=/social')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const sidebarItems = [
     { id: 'feed', label: 'Home', icon: Users, active: true },

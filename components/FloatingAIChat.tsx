@@ -24,6 +24,7 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import { detectLanguage, getTranslation, getKeywords, getQuickActions, SupportedLanguage } from "@/utils/multilingual";
 import { useLanguage, normalizeToAppLanguage } from "@/providers/LanguageProvider";
+import { useUserTracking } from "@/hooks/useUserTracking";
 
 interface ChatMessage {
   id: string;
@@ -38,6 +39,9 @@ interface ChatMessage {
 
 export default function FloatingAIChat() {
   const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguage();
+  const { getUserFirstName, isLoggedIn, trackAIConversation } = useUserTracking();
+  const userFirstName = getUserFirstName();
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -229,17 +233,11 @@ export default function FloatingAIChat() {
         hi: "Hindi",
       };
 
-      const prompt = `You are an AI psychology assistant. User is currently on the ${currentContext} and said: "${userMessage}". 
-      Language: ${languageNames[language]}.
-      Available sections: ${suggestions.map(s => s.text).join(", ")}.
-      
-      Respond in ${languageNames[language]} with:
-      1. Acknowledge their question/concern
-      2. Provide helpful context about current page if relevant
-      3. Guide them to appropriate sections
-      4. Be supportive and professional
-      
-      Keep under 100 words and use natural conversational language.`;
+      // Create personalized prompt
+      let prompt = `You are an AI psychology assistant. User is currently on the ${currentContext} and said: "${userMessage}". Language: ${languageNames[language]}. Available sections: ${suggestions.map(s => s.text).join(", ")}. Respond in ${languageNames[language]} with: 1. Acknowledge their question/concern 2. Provide helpful context about current page if relevant 3. Guide them to appropriate sections 4. Be supportive and professional. Keep under 100 words and use natural conversational language.`;
+      if (isLoggedIn && userFirstName) {
+        prompt = `You are an AI psychology assistant. User ${userFirstName} is currently on the ${currentContext} and said: "${userMessage}". Please address them personally by their name (${userFirstName}) and provide a helpful response. Language: ${languageNames[language]}. Available sections: ${suggestions.map(s => s.text).join(", ")}. Respond in ${languageNames[language]} with: 1. Acknowledge their question/concern 2. Provide helpful context about current page if relevant 3. Guide them to appropriate sections 4. Be supportive and professional. Keep under 100 words and use natural conversational language.`;
+      }
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -286,6 +284,9 @@ export default function FloatingAIChat() {
       const finalMessages = [...newMessages, aiMessage];
       setMessages(finalMessages);
       saveChatHistory(finalMessages);
+      
+      // Track AI conversation for user
+      trackAIConversation(inputMessage, aiResponse);
 
     } catch (error) {
       const detectedLanguage = updateLanguage(inputMessage);
