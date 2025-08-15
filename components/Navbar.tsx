@@ -9,7 +9,7 @@ import {
   Brain, 
   TestTube, 
   Users, 
-  User,
+  User, 
   Sparkles,
   ChevronDown,
   GraduationCap,
@@ -20,13 +20,13 @@ import {
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
-const navItems = [
+const getNavItems = (user: any) => [
   { name: "AI", href: "/", icon: Brain },
   { name: "Social", href: "/social", icon: Users },
   { name: "Tests", href: "/tests", icon: TestTube },
   { name: "Learning", href: "/learning", icon: GraduationCap },
   { name: "Therapists", href: "/therapists", icon: Users },
-  { name: "Me", href: "/profile", icon: User },
+  { name: "Me", href: user?.userCode ? `/u/${user.userCode}` : "/profile", icon: User },
 ];
 
 export default function Navbar() {
@@ -36,6 +36,7 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
+  const navItems = getNavItems(user);
 
   // Check for user authentication
   useEffect(() => {
@@ -189,7 +190,7 @@ export default function Navbar() {
                             className="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <User className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700 dark:text-gray-300">My Profile</span>
+                            <span className="text-gray-700 dark:text-gray-300">Edit Profile</span>
                           </Link>
                           
                           {user.userCode && (
@@ -428,9 +429,9 @@ export default function Navbar() {
                     </div>
                   )}
                   <div className="mt-4 flex items-center justify-between">
-                    <ThemeToggle />
+                  <ThemeToggle />
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                       <span className="text-xs text-gray-500">AI Online</span>
                     </div>
                   </div>

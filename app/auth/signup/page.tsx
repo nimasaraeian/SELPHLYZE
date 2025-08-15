@@ -174,10 +174,10 @@ export default function SignUpPage() {
         window.dispatchEvent(new Event('storage'));
         
         // Show success message
-        alert('Account created successfully! Redirecting to your profile...');
+        alert(`Account created successfully! Your personal URL: selphlyze.com/u/${userCode}`);
         
-        // Redirect to profile page
-        router.push('/profile');
+        // Redirect to user's personal URL
+        router.push(`/u/${userCode}`);
       } catch (error) {
         alert('Error creating account. Please try again.');
         console.error('Signup error:', error);

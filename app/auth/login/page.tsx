@@ -89,7 +89,8 @@ export default function LoginPage() {
       // Trigger storage event to update navbar
       window.dispatchEvent(new Event('storage'));
       
-      router.push('/profile');
+      // Redirect to user's personal URL
+      router.push('/u/clinpsyc2024');
     } catch (error) {
       setErrors({ general: 'Login failed. Please try again.' });
     } finally {
