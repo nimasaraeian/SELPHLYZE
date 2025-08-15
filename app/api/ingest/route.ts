@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const upserts = [] as any[];
     for (let i = 0; i < documents.length; i++) {
       const doc = documents[i];
-      const { data: docRow, error: docErr } = await getSupabaseServer
+      const { data: docRow, error: docErr } = await getSupabaseServer()
         .from("documents")
         .insert({
           id: doc.id,
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         .single();
       if (docErr) throw docErr;
 
-      const { error: embErr } = await getSupabaseServer
+      const { error: embErr } =       await getSupabaseServer()
         .from("document_embeddings")
         .upsert({ document_id: docRow.id, embedding: vectors[i] as unknown as any });
       if (embErr) throw embErr;

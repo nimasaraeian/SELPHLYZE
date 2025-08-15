@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServer } from "@/app/lib/getSupabaseServer";
 
 const StatusSchema = z.object({
   contentId: z.string().uuid(),
@@ -13,6 +12,7 @@ const StatusSchema = z.object({
 export async function POST(req: Request) {
   try {
     const body = StatusSchema.parse(await req.json());
+    const { getSupabaseServer } = await import("@/app/lib/supabaseServer");
     const s = getSupabaseServer();
     const { data: { user } } = await s.auth.getUser();
     if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

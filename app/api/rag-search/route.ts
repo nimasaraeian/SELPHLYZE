@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Perform similarity search via RPC or pgvector operator (requires SQL setup)
     // Example expects a Postgres function: match_documents(namespace text, query_embedding vector, match_count int)
-    const { data, error } = await getSupabaseServer.rpc("match_documents", {
+    const { data, error } = await getSupabaseServer().rpc("match_documents", {
       p_namespace: namespace ?? null,
       p_query_embedding: qvec as unknown as any,
       p_match_count: topK,
