@@ -21,6 +21,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
+  { name: "Social", href: "/social", icon: Users },
   { name: "Tests", href: "/tests", icon: TestTube },
   { name: "Articles", href: "/psy-articles", icon: Brain },
   { name: "Modules", href: "/modules", icon: Sparkles },
