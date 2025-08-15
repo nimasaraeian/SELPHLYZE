@@ -60,6 +60,9 @@ export const metadata: Metadata = {
   },
   viewport: 'width=device-width, initial-scale=1',
   category: 'psychology',
+  verification: {
+    google: 'a749cf479c48223f',
+  },
 };
 
 export default function RootLayout({
