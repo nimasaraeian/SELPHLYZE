@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingAIChat from "@/components/FloatingAIChat";
 import StructuredData from "@/components/StructuredData";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
@@ -70,6 +71,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${sans.variable} ${serif.variable}`}>
       <head>
         <StructuredData />
+        <GoogleAnalytics GA_TRACKING_ID={process.env.NEXT_PUBLIC_GA_ID} />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <ThemeProvider>
