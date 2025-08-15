@@ -9,8 +9,7 @@ import {
   Brain, 
   TestTube, 
   Users, 
-  User, 
-  Mail,
+  User,
   Sparkles,
   ChevronDown,
   GraduationCap
@@ -19,14 +18,12 @@ import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
-  { name: "Home", href: "/", icon: Home },
+  { name: "AI", href: "/", icon: Home },
   { name: "Social", href: "/social", icon: Users },
   { name: "Tests", href: "/tests", icon: TestTube },
-  { name: "Modules", href: "/modules", icon: Sparkles },
   { name: "Learning", href: "/learning", icon: GraduationCap },
   { name: "Therapists", href: "/therapists", icon: Users },
-  { name: "Profile", href: "/profile", icon: User },
-  { name: "Contact", href: "/contact", icon: Mail },
+  { name: "Me", href: "/profile", icon: User },
 ];
 
 export default function Navbar() {

@@ -58,7 +58,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
         createdAt: new Date('2022-01-15'),
         lastActive: new Date(),
       },
-      content: "نکته مهم در مواجهه با اضطراب: یادگیری تکنیک‌های تنفس عمیق می‌تواند در کاهش علائم فیزیکی اضطراب بسیار مؤثر باشد. تمرین منظم این تکنیک‌ها باعث می‌شود که در مواقع استرس بتوانید بهتر کنترل خود را حفظ کنید.",
+      content: "Important tip for dealing with anxiety: Learning deep breathing techniques can be very effective in reducing physical symptoms of anxiety. Regular practice of these techniques helps you maintain better control during stressful situations.",
       type: 'text',
       visibility: 'public',
       tags: ['anxiety', 'coping', 'breathing', 'mindfulness'],
@@ -116,7 +116,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
         createdAt: new Date('2021-09-20'),
         lastActive: new Date(),
       },
-      content: "نتایج جدید تحقیق ما نشان می‌دهد که ترکیب CBT با mindfulness می‌تواند تا ۳۰٪ بهبود بیشتری در درمان افسردگی نسبت به روش‌های سنتی ایجاد کند. این یافته امیدوارکننده است! 📊",
+      content: "Our new research results show that combining CBT with mindfulness can create up to 30% more improvement in depression treatment compared to traditional methods. This finding is promising! 📊",
       type: 'article',
       visibility: 'professional',
       tags: ['research', 'CBT', 'mindfulness', 'depression', 'study'],
@@ -154,10 +154,10 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
-    if (diffInHours < 1) return 'اکنون';
-    if (diffInHours < 24) return `${diffInHours} ساعت پیش`;
-    if (diffInHours < 48) return 'دیروز';
-    return date.toLocaleDateString('fa-IR');
+    if (diffInHours < 1) return 'now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 48) return 'yesterday';
+    return date.toLocaleDateString('en-US');
   };
 
   const getRoleColor = (role: string) => {
@@ -171,10 +171,10 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'psychologist': return 'روانشناس';
-      case 'researcher': return 'محقق';
-      case 'admin': return 'مدیر';
-      default: return 'کاربر';
+      case 'psychologist': return 'Psychologist';
+      case 'researcher': return 'Researcher';
+      case 'admin': return 'Admin';
+      default: return 'User';
     }
   };
 
@@ -182,13 +182,13 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Create Post Box */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center space-x-3 space-x-reverse">
+        <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 font-medium">شما</span>
+            <span className="text-gray-600 font-medium text-sm">You</span>
           </div>
           <div className="flex-1">
-            <button className="w-full text-right p-3 bg-gray-50 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-              چه چیزی در ذهن دارید؟
+            <button className="w-full text-left p-3 bg-gray-50 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+              What's on your mind?
             </button>
           </div>
         </div>
@@ -205,14 +205,14 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
           {/* Post Header */}
           <div className="p-6 pb-3">
             <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center space-x-3">
                 <img
                   src={post.user.profile.avatar || 'https://i.pravatar.cc/150'}
                   alt={post.user.profile.fullName}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className="flex items-center space-x-2">
                     <h3 className="font-semibold text-gray-900">
                       {post.user.profile.fullName}
                     </h3>
@@ -257,10 +257,10 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
             {/* AI Analysis Indicator */}
             {post.aiAnalysis && (
               <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span className="text-xs text-green-700">
-                    تحلیل هوش مصنوعی: محتوای {post.aiAnalysis.sentiment === 'positive' ? 'مثبت' : 'خنثی'} - موضوعات: {post.aiAnalysis.topics.join(', ')}
+                    AI Analysis: {post.aiAnalysis.sentiment === 'positive' ? 'Positive' : 'Neutral'} content - Topics: {post.aiAnalysis.topics.join(', ')}
                   </span>
                 </div>
               </div>
@@ -270,21 +270,21 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
           {/* Post Actions */}
           <div className="px-6 py-3 border-t border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6 space-x-reverse">
+              <div className="flex items-center space-x-6">
                 <button
                   onClick={() => handleLike(post.id)}
-                  className="flex items-center space-x-2 space-x-reverse text-gray-500 hover:text-red-600 transition-colors group"
+                  className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors group"
                 >
                   <Heart className="w-5 h-5 group-hover:fill-current" />
                   <span className="text-sm">{post.likesCount}</span>
                 </button>
                 
-                <button className="flex items-center space-x-2 space-x-reverse text-gray-500 hover:text-blue-600 transition-colors">
+                <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors">
                   <MessageCircle className="w-5 h-5" />
                   <span className="text-sm">{post.commentsCount}</span>
                 </button>
                 
-                <button className="flex items-center space-x-2 space-x-reverse text-gray-500 hover:text-green-600 transition-colors">
+                <button className="flex items-center space-x-2 text-gray-500 hover:text-green-600 transition-colors">
                   <Share2 className="w-5 h-5" />
                   <span className="text-sm">{post.sharesCount}</span>
                 </button>
@@ -292,7 +292,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
 
               {/* Visibility Indicator */}
               <div className="text-xs text-gray-400">
-                {post.visibility === 'public' ? '🌍 عمومی' : '👥 حرفه‌ای'}
+                {post.visibility === 'public' ? '🌍 Public' : '👥 Professional'}
               </div>
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
             disabled={loading}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
-            {loading ? 'در حال بارگذاری...' : 'نمایش بیشتر'}
+            {loading ? 'Loading...' : 'Load More'}
           </button>
         </div>
       )}
