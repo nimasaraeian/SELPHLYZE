@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   User, 
   Mail, 
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -144,9 +146,28 @@ export default function SignUpPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateStep(4)) {
-      // Here you would normally send data to your backend
-      console.log('Form submitted:', { ...formData, accountType });
-      alert('Account created successfully! Please check your email for verification.');
+      try {
+        // Create user object with all form data
+        const userData = {
+          ...formData,
+          accountType,
+          id: Date.now().toString(), // Simple ID generation
+          createdAt: new Date().toISOString(),
+          verified: false
+        };
+        
+        // Save user data to localStorage (in real app, this would be sent to backend)
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Show success message
+        alert('Account created successfully! Redirecting to your profile...');
+        
+        // Redirect to profile page
+        router.push('/profile');
+      } catch (error) {
+        alert('Error creating account. Please try again.');
+        console.error('Signup error:', error);
+      }
     }
   };
 

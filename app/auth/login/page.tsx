@@ -72,11 +72,19 @@ export default function LoginPage() {
       // Simulate successful login
       localStorage.setItem('user', JSON.stringify({
         email: formData.email,
-        name: 'John Doe',
-        accountType: 'professional'
+        firstName: 'John',
+        lastName: 'Doe',
+        username: 'johndoe',
+        accountType: 'professional',
+        specialization: 'Clinical Psychology',
+        experience: 'Senior Level (7-15 years)',
+        institution: 'Metropolitan Psychology Center',
+        phone: '+1-555-0123',
+        verified: true,
+        createdAt: new Date().toISOString()
       }));
       
-      router.push('/social');
+      router.push('/profile');
     } catch (error) {
       setErrors({ general: 'Login failed. Please try again.' });
     } finally {
