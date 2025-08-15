@@ -79,6 +79,8 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    // Trigger storage event to update navbar
+    window.dispatchEvent(new Event('storage'));
     router.push('/');
   };
 
@@ -158,6 +160,40 @@ export default function ProfilePage() {
                   </span>
                 </div>
               </div>
+
+              {/* Profile URL */}
+              {user.userCode && (
+                <div className="border-t border-[var(--border)] pt-6 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4">
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                      🔗 Your Public Profile
+                    </h4>
+                    <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-lg border text-sm">
+                      <code className="flex-1 text-gray-600 dark:text-gray-400 truncate">
+                        selphlyze.com/u/{user.userCode}
+                      </code>
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/u/${user.userCode}`;
+                          navigator.clipboard.writeText(url);
+                          alert('Profile URL copied!');
+                        }}
+                        className="text-blue-600 hover:text-blue-700 p-1"
+                      >
+                        📋
+                      </button>
+                      <a
+                        href={`/u/${user.userCode}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 p-1"
+                      >
+                        🔗
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Stats */}
               <div className="space-y-4 border-t border-[var(--border)] pt-6">

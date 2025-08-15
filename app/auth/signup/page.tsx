@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { generateUniqueUserCode } from '@/utils/userCodeGenerator';
 import { 
   User, 
   Mail, 
@@ -147,17 +148,30 @@ export default function SignUpPage() {
     e.preventDefault();
     if (validateStep(4)) {
       try {
+        // Generate unique user code
+        const existingCodes = JSON.parse(localStorage.getItem('existingUserCodes') || '[]');
+        const userCode = generateUniqueUserCode({ ...formData, accountType }, existingCodes);
+        
+        // Save the new code to existing codes
+        existingCodes.push(userCode);
+        localStorage.setItem('existingUserCodes', JSON.stringify(existingCodes));
+        
         // Create user object with all form data
         const userData = {
           ...formData,
           accountType,
-          id: Date.now().toString(), // Simple ID generation
+          id: Date.now().toString(),
+          userCode: userCode, // Unique user code for URL
+          profileUrl: `/u/${userCode}`, // Public profile URL
           createdAt: new Date().toISOString(),
           verified: false
         };
         
         // Save user data to localStorage (in real app, this would be sent to backend)
         localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Trigger storage event to update navbar
+        window.dispatchEvent(new Event('storage'));
         
         // Show success message
         alert('Account created successfully! Redirecting to your profile...');

@@ -81,8 +81,13 @@ export default function LoginPage() {
         institution: 'Metropolitan Psychology Center',
         phone: '+1-555-0123',
         verified: true,
+        userCode: 'clinpsyc2024',
+        profileUrl: '/u/clinpsyc2024',
         createdAt: new Date().toISOString()
       }));
+      
+      // Trigger storage event to update navbar
+      window.dispatchEvent(new Event('storage'));
       
       router.push('/profile');
     } catch (error) {
