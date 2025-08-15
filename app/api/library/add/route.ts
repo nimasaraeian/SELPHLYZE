@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServer } from "@/app/lib/supabaseServer";
+import { getSupabaseServer } from "@/app/lib/getSupabaseServer";
 
 const AddSchema = z.object({
   type: z.enum(["BOOK","PODCAST","ARTICLE"]),

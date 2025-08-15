@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServer } from "@/app/lib/supabaseServer";
+import { getSupabaseServer } from "@/app/lib/getSupabaseServer";
 
 const ProfileSchema = z.object({
   full_name: z.string().min(1).max(80),

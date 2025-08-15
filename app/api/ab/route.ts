@@ -8,7 +8,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "invalid payload" }, { status: 400 });
     }
     let supabase: any = null;
-    try { supabase = (await import("@/app/lib/supabaseServer")).supabaseServer; } catch {}
+    try { 
+      const { getSupabaseServer } = await import("@/app/lib/supabaseServer");
+      supabase = getSupabaseServer();
+    } catch {}
     if (!supabase) return NextResponse.json({ ok: true });
     const { data: { user } } = await supabase.auth.getUser();
     await supabase.from("ab_events").insert({
