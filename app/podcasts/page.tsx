@@ -25,7 +25,7 @@ export default function PodcastsPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-extrabold">Psychology Podcasts</h1>
@@ -34,17 +34,17 @@ export default function PodcastsPage() {
 
         <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {categories.map((cat) => (
-            <div key={cat.title} className="bg-slate-900/70 border border-slate-700 rounded-3xl p-6 hover:border-teal-500/60 transition">
+            <div key={cat.title} className="rounded-3xl p-6 border bg-[var(--surface)] border-[var(--border)] hover:border-teal-500/60 transition shadow-[0_10px_30px_rgba(2,6,23,0.06)] hover:shadow-[0_16px_40px_rgba(2,6,23,0.10)]">
               <div className="mb-5">
                 <h2 className="text-2xl font-bold">{cat.title}</h2>
-                <p className="text-slate-400 text-sm">Tap a platform to view curated search results</p>
+                <p className="text-[var(--muted)] text-sm">Tap a platform to view curated search results</p>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {platforms.map((p) => (
-                  <a key={p.name} href={p.buildUrl(cat.query)} target="_blank" rel="noreferrer" className="group block bg-slate-800/60 border border-slate-700 rounded-xl p-3 hover:border-teal-500">
+                {platforms.map((p, i) => (
+                  <a key={p.name} href={p.buildUrl(cat.query)} target="_blank" rel="noreferrer" className="group block rounded-xl p-3 border bg-[var(--surface)] border-[var(--border)] hover:border-teal-500 shadow-[0_4px_14px_rgba(2,6,23,0.05)] hover:shadow-[0_8px_20px_rgba(2,6,23,0.09)] transition transform hover:-translate-y-0.5" style={{ transitionDelay: `${i * 20}ms` }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.logo} alt={p.name} className="w-10 h-10 rounded-md mx-auto mb-2" />
-                    <div className="text-center text-[11px] text-slate-300 group-hover:text-teal-300">{p.name}</div>
+                    <div className="text-center text-[11px] text-[var(--muted)] group-hover:text-teal-700">{p.name}</div>
                   </a>
                 ))}
               </div>

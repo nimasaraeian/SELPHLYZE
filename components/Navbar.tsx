@@ -17,6 +17,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
@@ -79,7 +80,7 @@ export default function Navbar() {
                         relative px-4 py-2 rounded-full font-medium text-base
                         transition-all duration-300 group flex items-center gap-2
                         ${isActive 
-                          ? "text-white bg-gradient-to-r from-teal-500 to-blue-500" 
+                          ? "text-white preserve-white bg-gradient-to-r from-teal-500 to-blue-500" 
                           : "text-gray-300 hover:text-white hover:bg-white/10"
                         }
                       `}
@@ -90,6 +91,9 @@ export default function Navbar() {
                   </motion.div>
                 );
               })}
+            </div>
+            <div className="absolute right-6 hidden md:block">
+              <ThemeToggle />
             </div>
             
             {/* Mobile Menu Button */}
@@ -158,7 +162,7 @@ export default function Navbar() {
                       <Brain className="w-5 h-5 text-white" />
                     </div>
                     <span className="text-xl font-bold text-gradient-psyche">
-                      SELPHLYZE
+                      AI Platform
                     </span>
                   </div>
                   <button
@@ -189,7 +193,7 @@ export default function Navbar() {
                             flex items-center gap-4 px-4 py-4 rounded-xl font-medium
                             transition-all duration-300 group
                             ${isActive 
-                              ? "text-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
+                              ? "text-white preserve-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
                               : "text-gray-300 hover:text-white hover:bg-white/5"
                             }
                           `}
@@ -211,7 +215,8 @@ export default function Navbar() {
                 </nav>
 
                 {/* Mobile Footer */}
-                <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
+                  <ThemeToggle />
                   <p className="text-sm text-gray-400 text-center">
                     AI-Powered Psychology Platform
                   </p>

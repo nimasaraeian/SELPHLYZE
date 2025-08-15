@@ -64,7 +64,7 @@ export default function JoblyzePage() {
   const allAnswered = questions.every((_, i) => answers[i] !== undefined);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-blue-950/20 to-black text-white py-12 px-6">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.header 

@@ -2,17 +2,21 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import SimpleAISearch from "@/components/SimpleAISearch";
+import WhySection from "@/components/WhySection";
+import SocialProof from "@/components/SocialProof";
+import { getVariant } from "@/utils/ab";
 
 
 
 export default function Home() {
+  const variant = getVariant("home_headline");
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
+    <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       
       {/* Simple Background */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full blur-3xl bg-teal-500/10" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl bg-blue-500/10" />
       </div>
 
       <main className="relative z-10 min-h-screen flex flex-col">
@@ -45,13 +49,17 @@ export default function Home() {
               transition={{ delay: 0.3, duration: 0.8 }}
               className="mb-12"
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                SELPHLYZE
-              </h1>
-              
-              <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
+              {/* Keep subtitle, remove SELPHLYZE heading */}
+              <p className="text-lg md:text-xl text-[var(--muted)] max-w-2xl mx-auto">
                 AI-Powered Psychology Platform
               </p>
+            </motion.div>
+
+            {/* AB-tested headline + CTA */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.8 }} className="mb-6">
+              <h1 className="text-3xl md:text-5xl font-extrabold text-white">
+                {variant === 'A' ? "Understand Yourself with AI" : "AI Insights for Your Mind"}
+              </h1>
             </motion.div>
 
             {/* AI Search Component */}
@@ -63,11 +71,15 @@ export default function Home() {
             >
               <SimpleAISearch />
             </motion.div>
+
+            <WhySection />
+            <SocialProof />
           </div>
         </section>
 
 
       </main>
+      
     </div>
   );
 }

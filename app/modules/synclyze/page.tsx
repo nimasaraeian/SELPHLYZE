@@ -155,6 +155,7 @@ const questionnaire: Section[] = [
 export default function SynclyzeModulePage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [result, setResult] = useState<
     | null
     | {
@@ -182,6 +183,7 @@ export default function SynclyzeModulePage() {
         };
       }
   >(null);
+
   // Audio flow states
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioConsent, setAudioConsent] = useState(false);
@@ -192,6 +194,20 @@ export default function SynclyzeModulePage() {
     return false;
   });
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); setIsMounted(true); }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading Synclyze...</p>
+        </div>
+      </div>
+    );
+  }
 
   const sessionData =
     typeof window !== "undefined" ? localStorage.getItem("synclyzeAnswers") : null;
@@ -565,7 +581,7 @@ export default function SynclyzeModulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-16 px-6">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Local UI helpers for charts/cards (kept minimal; bars now use Tailwind gradient) */}
         {/* Header */}
@@ -817,10 +833,16 @@ export default function SynclyzeModulePage() {
                   <h3 className="text-lg font-bold text-white mb-4">Dimension Scores</h3>
                   <ScoresBarChart scores={result.scores} />
                 </div>
-                <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Radar Overview</h3>
-                  <RadarChart scores={result.scores} />
-                </div>
+                 <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
+                   <h3 className="text-lg font-bold text-white mb-4">Radar Overview</h3>
+                   <div suppressHydrationWarning>
+                     {isMounted ? (
+                       <RadarChart scores={result.scores} />
+                     ) : (
+                       <div className="h-64 grid place-items-center text-slate-500 text-sm">Loading…</div>
+                     )}
+                   </div>
+                 </div>
               </div>
             )}
 
@@ -879,8 +901,8 @@ export default function SynclyzeModulePage() {
       </div>
       {/* Fullscreen analyzing modal */}
       {loading && (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center">
-          <div className="w-80 rounded-2xl border border-emerald-500/30 bg-slate-900/90 p-6 text-center shadow-2xl">
+        <div className="fixed inset-0 z-[100] bg-[var(--overlay)] backdrop-blur-sm flex items-center justify-center">
+          <div className="w-80 rounded-2xl border border-emerald-500/30 bg-[var(--surface)] p-6 text-center shadow-2xl">
             <div className="mx-auto mb-4 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center animate-pulse">
               <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v4" />

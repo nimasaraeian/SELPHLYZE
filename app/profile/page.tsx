@@ -1,864 +1,667 @@
 "use client";
-import { useState, useEffect } from "react";
-// Supabase may be unavailable in some environments; we'll lazy-load it
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  User, 
-  Settings, 
-  Shield, 
-  Bell, 
-  Edit, 
-  Camera, 
-  Save, 
-  X,
-  MapPin,
-  Calendar,
-  Briefcase,
-  GraduationCap,
-  Languages,
-  Award,
-  Star,
-  Users,
-  MessageCircle,
-  Video,
-  TrendingUp,
-  Clock,
-  Heart,
-  Brain,
-  Zap,
-  Globe,
-  Phone,
-  Mail,
-  Plus,
-  Trash2
-} from "lucide-react";
-import ProfileDashboard from "@/components/ProfileDashboard";
 
-type UserType = "therapist" | "client" | null;
+import React, { useEffect, useMemo, useState } from "react";
+import { Upload, LogOut, Settings, Library, Book, Headphones, Activity, Users, Shield, BarChart3, Plus, Pencil } from "lucide-react";
+import { motion } from "framer-motion";
 
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  userType: UserType;
-  // Common fields
-  location: string;
-  joinDate: string;
-  bio: string;
-  languages: string[];
-  
-  // Therapist specific
-  title?: string;
-  specializations?: string[];
-  experience?: string;
-  credentials?: string[];
-  consultationCode?: string;
-  hourlyRate?: number;
-  currency?: string;
-  rating?: number;
-  totalClients?: number;
-  completedSessions?: number;
-  availability?: boolean;
-  workingHours?: {
-    start: string;
-    end: string;
-    days: string[];
-  };
-  
-  // Client specific
-  interests?: string[];
-  therapistHistory?: string[];
-  testResults?: {
-    testName: string;
-    score: number;
-    date: string;
-  }[];
-  goals?: string[];
+// Resize image to prevent localStorage quota exceeded
+async function resizeImageToDataUrl(file: File, maxSizePx: number = 200, quality: number = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > height) {
+          if (width > maxSizePx) {
+            height = Math.round((height * maxSizePx) / width);
+            width = maxSizePx;
+          }
+        } else {
+          if (height > maxSizePx) {
+            width = Math.round((width * maxSizePx) / height);
+            height = maxSizePx;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported"));
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          resolve(dataUrl);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error("Invalid image"));
+      img.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
-export default function ProfilePage() {
-  const [userType, setUserType] = useState<UserType>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+// Read profile from localStorage
+function readLocalProfile() {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = localStorage.getItem("localProfileV1");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
 
-  // Load or create profile on auth (lazy supabase)
+// Read test results from localStorage
+function readTestResults() {
+  try {
+    if (typeof window === "undefined") return [];
+    const results = [];
+    
+    // General personality test
+    const general = localStorage.getItem("selphlyze_general_personality_v1");
+    if (general) {
+      const data = JSON.parse(general);
+      results.push({
+        id: "general-personality", 
+        title: "General Personality Test", 
+        date: new Date().toISOString().split('T')[0], 
+        status: "Completed", 
+        score: 85
+      });
+    }
+    
+    // Other tests
+    const pp = localStorage.getItem("testAnswers");
+    if (pp) {
+      const data = JSON.parse(pp);
+      results.push({
+        id: "personality-psychology", 
+        title: "Personality Psychology", 
+        date: new Date().toISOString().split('T')[0], 
+        status: "Completed", 
+        score: 78
+      });
+    }
+    
+    return results;
+  } catch {
+    return [];
+  }
+}
+
+// Mock data for demonstration
+const mockTraits = [
+  { dimension: "Openness", value: 82 },
+  { dimension: "Conscientiousness", value: 61 },
+  { dimension: "Extraversion", value: 45 },
+  { dimension: "Agreeableness", value: 72 },
+  { dimension: "Neuroticism", value: 38 },
+];
+
+const mockModules = [
+  { id: "m_01", name: "Synclyze", progress: 100, tag: "Complete" },
+  { id: "m_02", name: "Shadowlyze", progress: 70, tag: "In Progress" },
+  { id: "m_03", name: "Joblyze", progress: 40, tag: "Started" },
+];
+
+const mockBooks = [
+  { id: "b_01", title: "Thinking, Fast and Slow", status: "Completed" },
+  { id: "b_02", title: "The Body Keeps the Score", status: "Reading" },
+  { id: "b_03", title: "Predictably Irrational", status: "Wishlist" },
+];
+
+const mockPodcasts = [
+  { id: "p_01", title: "Hidden Brain — Emotions at Work", listened: true },
+  { id: "p_02", title: "Lex Fridman — Psychology & AI", listened: false },
+];
+
+const mockTherapist = {
+  id: "th_01",
+  name: "Dr. Sara Ahmadi",
+  specialty: "Cognitive Behavioral Therapy (CBT)",
+  avatarUrl: "https://i.pravatar.cc/160?img=47",
+  email: "sara.ahmadi@selphlyze.com",
+  phone: "+98 912 345 6789",
+  nextSession: "2025-01-25 14:00",
+};
+
+export default function ProfileDashboard() {
+  const [profile, setProfile] = useState<any>(null);
+  const [testResults, setTestResults] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Move useMemo before early returns to maintain hook order
+  const initials = useMemo(() => {
+    if (!profile?.fullName) return "U";
+    const parts = profile.fullName.split(" ");
+    return (parts[0]?.[0] || "?") + (parts[1]?.[0] || "");
+  }, [profile?.fullName]);
+
   useEffect(() => {
-    const init = async () => {
-      let supabase: any = null;
-      try { supabase = (await import("@/app/lib/supabaseClient")).supabase; } catch {}
-      if (!supabase) { setProfile(null); return; }
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { return; }
-      const user = session.user;
-      setUserId(user.id);
-      // load
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-      if (!p) {
-        // create default profile
-        const insert = {
-          id: user.id,
-          full_name: user.email?.split('@')[0] || 'User',
-          avatar_url: '',
-          bio: '',
-          location: '',
-          languages: ['English'],
-          user_type: 'client',
-        } as any;
-        await supabase.from('profiles').insert(insert);
-      }
-      const { data: p2 } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-      if (p2) {
-        const mapped: UserProfile = {
-          id: p2.id,
-          name: p2.full_name || user.email || 'User',
-          email: user.email || '',
-          avatar: p2.avatar_url || '',
-          userType: (p2.user_type as UserType) || 'client',
-          location: p2.location || '',
-          joinDate: user.created_at || new Date().toISOString(),
-          bio: p2.bio || '',
-          languages: Array.isArray(p2.languages) ? p2.languages : [],
-          therapistHistory: Array.isArray(p2.therapists) ? p2.therapists : [],
-          testResults: [],
-        };
-        setProfile(mapped);
-        setUserType(mapped.userType);
-        // load test results
-        const { data: results } = await supabase.from('test_results').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-        if (results) {
-          setProfile((prev) => prev ? ({ ...prev, testResults: results.map((r: any) => ({ testName: r.test_name || r.test_slug, score: Number(r.score ?? 0), date: new Date(r.finished_at || r.created_at).toLocaleString() })) }) : prev);
-        }
-      }
-    };
-    init();
+    setMounted(true);
+    const p = readLocalProfile();
+    const tests = readTestResults();
+    setProfile(p);
+    setTestResults(tests);
   }, []);
 
-  // Realtime updates for test_results so charts are always live
-  useEffect(() => {
-    const subscribe = async () => {
-      if (!userId) return;
-      try {
-        const supabase = (await import("@/app/lib/supabaseClient")).supabase;
-        const channel = supabase
-          .channel("realtime-test-results")
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'test_results', filter: `user_id=eq.${userId}` },
-            async () => {
-              const { data: results } = await supabase
-                .from('test_results')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
-              if (results) {
-                setProfile((prev) => prev ? ({
-                  ...prev,
-                  testResults: results.map((r: any) => ({
-                    testName: r.test_name || r.test_slug,
-                    score: Number(r.score ?? 0),
-                    date: new Date(r.finished_at || r.created_at).toLocaleString(),
-                  }))
-                }) : prev);
-              }
-            }
-          )
-          .subscribe();
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-        return () => {
-          try { supabase.removeChannel(channel); } catch {}
-        };
-      } catch {}
-    };
-
-    const cleanupPromise = subscribe();
-    return () => {
-      // ensure cleanup awaited if provided
-      Promise.resolve(cleanupPromise).catch(() => {});
-    };
-  }, [userId]);
-
-  // Load saved module results (e.g., Synclyze) from localStorage
-  const [synclyzeResult, setSynclyzeResult] = useState<any | null>(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  const handleSignOut = () => {
     try {
-      const raw = localStorage.getItem('synclyzeResult');
-      if (raw) setSynclyzeResult(JSON.parse(raw));
+      localStorage.removeItem("localProfileV1");
+      localStorage.removeItem("aiUserProfile");
+      localStorage.removeItem("selphlyze_general_personality_v1");
+      localStorage.removeItem("testAnswers");
+      setProfile(null);
+      setTestResults([]);
+      window.location.href = "/";
     } catch {}
-  }, []);
+  };
 
-  const handleAvatarUpload = async (file: File) => {
-    if (!profile) return;
-    const supabase = (await import("@/app/lib/supabaseClient")).supabase;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const user = session.user;
-    const filePath = `${user.id}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      const url = data.publicUrl;
-      await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
-      setProfile({ ...profile, avatar: url });
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      // Resize image to prevent localStorage quota exceeded
+      const resizedDataUrl = await resizeImageToDataUrl(file, 200, 0.7);
+      setAvatarPreview(resizedDataUrl);
+      
+      // Save to profile
+      if (profile) {
+        const updated = { ...profile, avatarDataUrl: resizedDataUrl };
+        localStorage.setItem("localProfileV1", JSON.stringify(updated));
+        setProfile(updated);
+      }
+    } catch (error) {
+      console.error("Error processing image:", error);
+      alert("خطا در پردازش تصویر. لطفاً تصویر کوچک‌تری انتخاب کنید.");
     }
   };
 
   const handleSaveProfile = async () => {
-    try {
-      setIsEditing(false);
-      const supabase = (await import("@/app/lib/supabaseClient")).supabase;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !profile) return;
-      await supabase.from('profiles').update({ full_name: profile.name, bio: profile.bio, location: profile.location }).eq('id', session.user.id);
-    } catch {}
+    setSaving(true);
+    setTimeout(() => setSaving(false), 800);
+  };
+
+  // Define user object before any early returns to maintain hook order
+  const user = {
+    id: "user_1",
+    name: profile?.fullName || "User",
+    email: "user@selphlyze.com",
+    avatarUrl: profile?.avatarDataUrl || "https://i.pravatar.cc/160?img=32",
+    bio: `Age: ${profile?.ageRange || '-'} • Gender: ${profile?.gender || '-'}`
   };
 
   if (!profile) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Guest header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-3xl p-8 border border-slate-700 mb-8"
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
+          <p className="text-[var(--muted)] mb-6">Please complete your profile first.</p>
+          <button 
+            onClick={() => window.location.href = "/"} 
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
           >
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-slate-800 grid place-items-center">
-                <User className="w-10 h-10 text-gray-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Guest</h1>
-                <p className="text-gray-400 text-sm">Public view</p>
-              </div>
-            </div>
-          </motion.div>
-          <ProfileDashboard name="Guest" testResults={[]} />
-
-          {/* Guest can still view module results saved locally */}
-          <div className="mt-8 bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-emerald-400" />
-              <h3 className="text-xl font-bold text-white">Module Results</h3>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                <div className="text-sm text-slate-400 mb-1">Synclyze Code</div>
-                <div className="inline-block px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-teal-300 font-mono">
-                  {synclyzeResult?.code || '—'}
-                </div>
-                <div className="mt-4">
-                  {synclyzeResult?.scores ? (
-                    <SimpleBars scores={synclyzeResult.scores} />
-                  ) : (
-                    <p className="text-slate-400 text-sm">Complete the Synclyze module to see your scores.</p>
-                  )}
-                </div>
-              </div>
-              <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                <div className="text-sm text-slate-400 mb-1">Radar Overview</div>
-                {synclyzeResult?.scores ? (
-                  <MiniRadar scores={synclyzeResult.scores} />
-                ) : (
-                  <div className="h-48 grid place-items-center text-slate-500 text-sm">No data</div>
-                )}
-              </div>
-            </div>
-          </div>
+            Go Home
+          </button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Profile Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-3xl p-8 border border-slate-700 mb-8"
-        >
-          <div className="flex flex-col lg:flex-row items-start gap-8">
-            {/* Avatar Section */}
-            <div className="relative">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-teal-400 to-blue-500 p-1"
-              >
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-800 flex items-center justify-center">
-                  {profile.avatar ? (
-                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-16 h-16 text-gray-400" />
-                  )}
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] pt-20">
+      {/* Top bar */}
+      <div className="sticky top-16 z-30 border-b border-[var(--border)] bg-[var(--surface)]/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-2xl bg-teal-600" />
+            <span className="text-lg font-semibold">Selphlyze</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleSignOut} 
+              className="px-3 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface)] flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4"/> Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        {/* Profile header */}
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 mb-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-5">
+              <div className="h-20 w-20 rounded-full overflow-hidden bg-[var(--surface)] border border-[var(--border)]">
+                {(avatarPreview || user.avatarUrl) ? (
+                  <img 
+                    src={avatarPreview || user.avatarUrl} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
+                    {initials}
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">{user.name}</h1>
+                  <span className="px-2 py-1 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs">Member</span>
                 </div>
-              </motion.div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute -bottom-2 -right-2 w-10 h-10 bg-teal-600 hover:bg-teal-700 rounded-full flex items-center justify-center border-4 border-slate-900"
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.onchange = () => {
-                    const f = (input.files && input.files[0]) as File | undefined;
-                    if (f) handleAvatarUpload(f);
-                  };
-                  input.click();
-                }}
-              >
-                <Camera className="w-4 h-4 text-white" />
-              </motion.button>
+                <p className="text-sm text-[var(--muted)]">{user.bio}</p>
+                <div className="mt-2 text-xs text-[var(--muted)]">{user.email}</div>
+              </div>
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">{profile.name}</h1>
-                  {profile.userType === "therapist" && (
-                    <p className="text-teal-300 text-lg font-medium mb-2">{profile.title}</p>
-                  )}
-                  <div className="flex items-center gap-4 text-gray-400 text-sm">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {profile.location}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      Joined {new Date(profile.joinDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl transition-colors"
+            <div className="flex flex-col items-start gap-2 md:items-end">
+              <div className="flex items-center gap-2">
+                <input 
+                  id="avatar" 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarChange} 
+                  className="max-w-xs px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]" 
+                />
+                <button 
+                  onClick={handleSaveProfile} 
+                  disabled={saving}
+                  className="px-3 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface)] flex items-center gap-2"
                 >
-                  {isEditing ? <X className="w-5 h-5" /> : <Edit className="w-5 h-5" />}
-                </motion.button>
+                  <Upload className="h-4 w-4"/>
+                  {saving ? "Saving..." : "Save"}
+                </button>
               </div>
-
-              {/* Stats for Therapist */}
-              {profile.userType === "therapist" && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
-                    <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-                    <div className="text-xl font-bold text-white">{profile.rating}</div>
-                    <div className="text-xs text-gray-400">Rating</div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
-                    <Users className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-                    <div className="text-xl font-bold text-white">{profile.totalClients}</div>
-                    <div className="text-xs text-gray-400">Clients</div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
-                    <Video className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                    <div className="text-xl font-bold text-white">{profile.completedSessions}</div>
-                    <div className="text-xs text-gray-400">Sessions</div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
-                    <Clock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                    <div className="text-xl font-bold text-white">{profile.experience}</div>
-                    <div className="text-xs text-gray-400">Experience</div>
-                  </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-xl font-semibold">{testResults.filter(t=>t.status==="Completed").length}</div>
+                  <div className="text-xs text-[var(--muted)]">Tests done</div>
                 </div>
-              )}
-
-              {/* Bio */}
-              <p className="text-gray-300 leading-relaxed">{profile.bio}</p>
+                <div>
+                  <div className="text-xl font-semibold">{mockModules.filter(m=>m.progress===100).length}</div>
+                  <div className="text-xs text-[var(--muted)]">Modules done</div>
+                </div>
+                <div>
+                  <div className="text-xl font-semibold">{mockBooks.filter(b=>b.status==="Completed").length}</div>
+                  <div className="text-xs text-[var(--muted)]">Books read</div>
+                </div>
+              </div>
             </div>
           </div>
-        </motion.div>
-
-        {/* Onboarding section temporarily disabled per request */}
-
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {[
-            { id: "dashboard", label: "Dashboard", icon: TrendingUp },
-            { id: "profile", label: "Profile", icon: User },
-            { id: "settings", label: "Settings", icon: Settings },
-            { id: "security", label: "Security", icon: Shield },
-            { id: "notifications", label: "Notifications", icon: Bell },
-            { id: "results", label: "Results", icon: Zap },
-          ].map((tab) => (
-            <motion.button
-              key={tab.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-teal-600 text-white shadow-lg"
-                  : "bg-slate-800 text-gray-300 hover:bg-slate-700"
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </motion.button>
-          ))}
         </div>
 
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Dashboard Tab */}
-            {activeTab === "dashboard" && (
-              <div className="mb-8">
-                <ProfileDashboard name={profile.name} testResults={profile.testResults || []} />
-              </div>
-            )}
+        {/* Tabs */}
+        <div className="space-y-6">
+          <div className="grid grid-cols-7 gap-2 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)]">
+            {[
+              { id: "overview", label: "Overview", icon: Activity },
+              { id: "tests", label: "Tests", icon: BarChart3 },
+              { id: "modules", label: "Modules", icon: Library },
+              { id: "books", label: "Books", icon: Book },
+              { id: "podcasts", label: "Podcasts", icon: Headphones },
+              { id: "therapist", label: "Therapist", icon: Users },
+              { id: "settings", label: "Settings", icon: Shield },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 justify-center ${
+                    activeTab === tab.id
+                      ? "bg-teal-600 text-white"
+                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4"/>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Profile Tab */}
-            {activeTab === "profile" && (
-              <div className="grid gap-8 lg:grid-cols-2">
-                {/* Personal Information */}
-                <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <User className="w-5 h-5 text-teal-400" />
-                    Personal Information
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={profile.name}
-                          onChange={(e) => setProfile({...profile, name: e.target.value})}
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                        />
-                      ) : (
-                        <p className="text-white">{profile.name}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={profile.email}
-                          onChange={(e) => setProfile({...profile, email: e.target.value})}
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                        />
-                      ) : (
-                        <p className="text-white">{profile.email}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Location</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={profile.location}
-                          onChange={(e) => setProfile({...profile, location: e.target.value})}
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                        />
-                      ) : (
-                        <p className="text-white">{profile.location}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Bio</label>
-                      {isEditing ? (
-                        <textarea
-                          value={profile.bio}
-                          onChange={(e) => setProfile({...profile, bio: e.target.value})}
-                          rows={4}
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none resize-none"
-                        />
-                      ) : (
-                        <p className="text-white">{profile.bio}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Languages</label>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.languages.map((lang, index) => (
-                          <span key={index} className="px-3 py-1 bg-teal-600/20 text-teal-300 rounded-full text-sm">
-                            {lang}
-                          </span>
-                        ))}
+          {/* OVERVIEW */}
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                  <h3 className="text-lg font-semibold mb-4">Trait Profile</h3>
+                  <div className="space-y-3">
+                    {mockTraits.map((trait) => (
+                      <div key={trait.dimension} className="flex items-center justify-between">
+                        <span className="text-sm">{trait.dimension}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 bg-[var(--surface)] rounded-full h-2 border border-[var(--border)]">
+                            <div 
+                              className="bg-teal-600 h-2 rounded-full" 
+                              style={{ width: `${trait.value}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-[var(--muted)] w-8">{trait.value}</span>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Professional Information (Therapist) or Interests (Client) */}
-                <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-                  {profile.userType === "therapist" ? (
-                    <>
-                      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <Briefcase className="w-5 h-5 text-blue-400" />
-                        Professional Information
-                      </h3>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Professional Title</label>
-                          <p className="text-white">{profile.title}</p>
-                        </div>
+                <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                  <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Average Score</span>
+                      <span className="text-lg font-semibold">
+                        {testResults.length > 0 
+                          ? Math.round(testResults.reduce((sum, t) => sum + (t.score || 0), 0) / testResults.length)
+                          : 0
+                        }
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Tests Completed</span>
+                      <span className="text-lg font-semibold">{testResults.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Profile Completion</span>
+                      <span className="text-lg font-semibold">
+                        {profile.fullName && profile.ageRange && profile.gender ? "100%" : "80%"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+                <div className="space-y-4">
+                  {testResults.length > 0 ? testResults.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] p-3">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-2 py-1 rounded-xl text-xs ${
+                          t.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                        }`}>
+                          {t.status}
+                        </span>
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Consultation Code</label>
-                          <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
-                            <code className="text-teal-300 font-mono">{profile.consultationCode}</code>
-                            <button className="text-gray-400 hover:text-white text-sm">Copy</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Hourly Rate</label>
-                          <p className="text-white">${profile.hourlyRate} {profile.currency}/hour</p>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Specializations</label>
-                          <div className="flex flex-wrap gap-2">
-                            {profile.specializations?.map((spec, index) => (
-                              <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm">
-                                {spec}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Credentials</label>
-                          <div className="space-y-2">
-                            {profile.credentials?.map((cred, index) => (
-                              <div key={index} className="flex items-center gap-2 text-white">
-                                <Award className="w-4 h-4 text-yellow-400" />
-                                {cred}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Availability</label>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${profile.availability ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                            <span className="text-white">{profile.availability ? 'Available' : 'Busy'}</span>
-                          </div>
+                          <div className="font-medium">{t.title}</div>
+                          <div className="text-xs text-[var(--muted)]">{t.date}</div>
                         </div>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <Heart className="w-5 h-5 text-pink-400" />
-                        Interests & Goals
-                      </h3>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Interests</label>
-                          <div className="flex flex-wrap gap-2">
-                            {profile.interests?.map((interest, index) => (
-                              <span key={index} className="px-3 py-1 bg-pink-600/20 text-pink-300 rounded-full text-sm">
-                                {interest}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Personal Goals</label>
-                          <div className="space-y-2">
-                            {profile.goals?.map((goal, index) => (
-                              <div key={index} className="flex items-center gap-2 text-white">
-                                <Brain className="w-4 h-4 text-purple-400" />
-                                {goal}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Test Results</label>
-                          <div className="space-y-2">
-                            {profile.testResults?.map((result, index) => (
-                              <div key={index} className="p-3 bg-slate-800 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-white font-medium">{result.testName}</span>
-                                  <span className="text-teal-300">{result.score}%</span>
-                                </div>
-                                <div className="text-xs text-gray-400 mt-1">{result.date}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </>
+                      <div className="text-sm text-[var(--muted)]">{t.score ? `Score: ${t.score}` : "—"}</div>
+                    </div>
+                  )) : (
+                    <div className="text-center text-[var(--muted)] py-8">
+                      No test results yet. Take your first test to see results here.
+                    </div>
                   )}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Results Tab */}
-            {activeTab === "results" && (
-              <div className="grid gap-6">
-                <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-slate-700 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Module Results</h3>
-                  {/* Synclyze summary */}
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                      <div className="text-sm text-slate-400 mb-1">Synclyze Code</div>
-                      <div className="inline-block px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-teal-300 font-mono">
-                        {synclyzeResult?.code || '—'}
+          {/* TESTS */}
+          {activeTab === "tests" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                {testResults.map((test) => (
+                  <div key={test.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold">{test.title}</h3>
+                      <span className={`px-2 py-1 rounded-xl text-xs ${
+                        test.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                      }`}>
+                        {test.status}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="text-sm text-[var(--muted)]">{test.date}</div>
+                      <div className="w-full bg-[var(--surface)] rounded-full h-2 border border-[var(--border)]">
+                        <div 
+                          className="bg-teal-600 h-2 rounded-full" 
+                          style={{ width: `${test.status === "Completed" ? 100 : 55}%` }}
+                        />
                       </div>
-                      <div className="mt-4">
-                        {synclyzeResult?.scores ? (
-                          <SimpleBars scores={synclyzeResult.scores} />
-                        ) : (
-                          <p className="text-slate-400 text-sm">Complete the Synclyze module to see your scores.</p>
-                        )}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm">Score: {test.score ?? "—"}</div>
+                        <button className="px-3 py-1 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--surface)] flex items-center gap-1">
+                          <BarChart3 className="h-4 w-4"/> View
+                        </button>
                       </div>
                     </div>
-                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                      <div className="text-sm text-slate-400 mb-1">Radar Overview</div>
-                      {synclyzeResult?.scores ? (
-                        <MiniRadar scores={synclyzeResult.scores} />
-                      ) : (
-                        <div className="h-48 grid place-items-center text-slate-500 text-sm">No data</div>
-                      )}
-                    </div>
                   </div>
-                  <div className="mt-6 text-slate-400 text-xs">More modules will appear here as you complete them.</div>
-                </div>
-                {/* Final composite code box (placeholder until all modules done) */}
-                <div className="bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-700/30 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-white mb-2">Your Composite Code</h3>
-                  <p className="text-slate-300 text-sm mb-3">This unlocks when you complete all modules.</p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-400 font-mono">
-                    PARTIAL: {synclyzeResult?.code ? synclyzeResult.code.replace('SYNC(', 'SYNC(…+') : 'SYNC(…+?)'}
-                  </div>
-                </div>
+                ))}
               </div>
-            )}
+              <button 
+                onClick={() => window.location.href = "/tests"}
+                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4"/> Start new test
+              </button>
+            </div>
+          )}
 
-            {/* Settings Tab */}
-            {activeTab === "settings" && (
-              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-gray-400" />
-                  Account Settings
-                </h3>
-                
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-medium">Email Notifications</h4>
-                      <p className="text-gray-400 text-sm">Receive email updates about your account</p>
+          {/* MODULES */}
+          {activeTab === "modules" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {mockModules.map((m) => (
+                  <div key={m.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold">{m.name}</h3>
+                      <span className="px-2 py-1 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs">
+                        {m.tag}
+                      </span>
                     </div>
-                    <button className="relative w-12 h-6 bg-teal-600 rounded-full">
-                      <div className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full transition-transform"></div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{m.progress}%</span>
+                      </div>
+                      <div className="w-full bg-[var(--surface)] rounded-full h-2 border border-[var(--border)]">
+                        <div 
+                          className="bg-teal-600 h-2 rounded-full" 
+                          style={{ width: `${m.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={() => window.location.href = "/modules"}
+                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4"/> Explore modules
+              </button>
+            </div>
+          )}
+
+          {/* BOOKS */}
+          {activeTab === "books" && (
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-4">Library</h3>
+              <div className="space-y-3">
+                {mockBooks.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs">
+                        {b.status}
+                      </span>
+                      <div className="font-medium">{b.title}</div>
+                    </div>
+                    <button className="px-3 py-1 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--surface)]">
+                      Details
                     </button>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-                  <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-medium">Profile Visibility</h4>
-                      <p className="text-gray-400 text-sm">Control who can see your profile</p>
+          {/* PODCASTS */}
+          {activeTab === "podcasts" && (
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-4">Podcasts</h3>
+              <div className="space-y-3">
+                {mockPodcasts.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] p-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`px-2 py-1 rounded-xl text-xs ${
+                        p.listened ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                      }`}>
+                        {p.listened ? "Listened" : "Queued"}
+                      </span>
+                      <div className="font-medium">{p.title}</div>
                     </div>
-                    <select className="bg-slate-700 text-white px-3 py-2 rounded-lg">
-                      <option>Public</option>
-                      <option>Private</option>
-                      <option>Contacts Only</option>
+                    <button className="px-3 py-1 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--surface)]">
+                      Open
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* THERAPIST */}
+          {activeTab === "therapist" && (
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-4">Your Therapist</h3>
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full overflow-hidden bg-[var(--surface)] border border-[var(--border)]">
+                    <img src={mockTherapist.avatarUrl} alt="Therapist" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold">{mockTherapist.name}</div>
+                    <div className="text-sm text-[var(--muted)]">{mockTherapist.specialty}</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{mockTherapist.email} • {mockTherapist.phone}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-2">
+                    <Users className="h-4 w-4"/> Book session
+                  </button>
+                  <button className="px-4 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface)]">
+                    Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SETTINGS */}
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-4">Profile</h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <input 
+                      defaultValue={user.name} 
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <input 
+                      defaultValue={user.email} 
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]" 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Bio</label>
+                    <textarea 
+                      defaultValue={user.bio} 
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]" 
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Age Range</label>
+                    <select 
+                      defaultValue={profile.ageRange}
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]"
+                    >
+                      <option value="">Select age range</option>
+                      <option value="15-20">15 - 20</option>
+                      <option value="20-25">20 - 25</option>
+                      <option value="25-30">25 - 30</option>
+                      <option value="30-35">30 - 35</option>
+                      <option value="35-40">35 - 40</option>
+                      <option value="40-45">40 - 45</option>
+                      <option value="45-50">45 - 50</option>
+                      <option value="50-60">50 - 60</option>
+                      <option value="60+">60+</option>
                     </select>
                   </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-medium">Two-Factor Authentication</h4>
-                      <p className="text-gray-400 text-sm">Add an extra layer of security</p>
-                    </div>
-                    <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors">
-                      Enable
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Gender</label>
+                    <select 
+                      defaultValue={profile.gender}
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)]"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2 flex items-center justify-end gap-2">
+                    <button className="px-4 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface)] flex items-center gap-2">
+                      <Pencil className="h-4 w-4"/> Cancel
+                    </button>
+                    <button 
+                      onClick={handleSaveProfile}
+                      className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                    >
+                      {saving ? "Saving..." : "Save changes"}
                     </button>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Security Tab */}
-            {activeTab === "security" && (
-              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-green-400" />
-                  Security Settings
-                </h3>
-                
-                <div className="space-y-6">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-4">Data Management</h3>
+                <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-white font-medium mb-4">Change Password</h4>
-                    <div className="space-y-4">
-                      <input
-                        type="password"
-                        placeholder="Current Password"
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                      />
-                      <input
-                        type="password"
-                        placeholder="New Password"
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                      />
-                      <input
-                        type="password"
-                        placeholder="Confirm New Password"
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-teal-500 focus:outline-none"
-                      />
-                      <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg transition-colors">
-                        Update Password
-                      </button>
-                    </div>
+                    <div className="font-medium">Clear all data</div>
+                    <div className="text-xs text-[var(--muted)]">Remove profile, test results, and preferences</div>
                   </div>
-
-                  <div>
-                    <h4 className="text-white font-medium mb-4">Active Sessions</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                        <div>
-                          <p className="text-white">Windows PC - Chrome</p>
-                          <p className="text-gray-400 text-sm">Current session • Tehran, Iran</p>
-                        </div>
-                        <span className="text-green-400 text-sm">Active</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                        <div>
-                          <p className="text-white">iPhone - Safari</p>
-                          <p className="text-gray-400 text-sm">2 hours ago • Tehran, Iran</p>
-                        </div>
-                        <button className="text-red-400 hover:text-red-300 text-sm">Terminate</button>
-                      </div>
-                    </div>
-                  </div>
+                  <button 
+                    onClick={handleSignOut}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Clear & Sign out
+                  </button>
                 </div>
               </div>
-            )}
-
-            {/* Notifications Tab */}
-            {activeTab === "notifications" && (
-              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-yellow-400" />
-                  Notification Preferences
-                </h3>
-                
-                <div className="space-y-4">
-                  {[
-                    { title: "New Messages", description: "Get notified when you receive new messages" },
-                    { title: "Appointment Reminders", description: "Receive reminders before scheduled sessions" },
-                    { title: "Test Results", description: "Get notified when test results are ready" },
-                    { title: "System Updates", description: "Important updates about the platform" },
-                    { title: "Marketing", description: "News, tips, and special offers" }
-                  ].map((notification, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-                      <div>
-                        <h4 className="text-white font-medium">{notification.title}</h4>
-                        <p className="text-gray-400 text-sm">{notification.description}</p>
-                      </div>
-                      <button className="relative w-12 h-6 bg-slate-600 rounded-full">
-                        <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform"></div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Save Button */}
-        {isEditing && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-8 right-8"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSaveProfile}
-              className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-2xl flex items-center gap-2"
-            >
-              <Save className="w-5 h-5" />
-              Save Changes
-            </motion.button>
-            <div className="mt-3">
-              <button onClick={async()=>{ const s = (await import("@/app/lib/supabaseClient")).supabase; await s.auth.signOut(); location.reload(); }} className="text-sm text-gray-400 hover:text-white">Sign out</button>
             </div>
-          </motion.div>
-        )}
-      </div>
-    </main>
-  );
-}
-
-function SimpleBars({ scores }: { scores: { attachment: number; eq: number; conflict: number; empathy: number; language: number } }) {
-  const items = [
-    { k: 'attachment', l: 'Attachment', v: scores.attachment },
-    { k: 'eq', l: 'Emotional Intelligence', v: scores.eq },
-    { k: 'conflict', l: 'Conflict Style', v: scores.conflict },
-    { k: 'empathy', l: 'Empathy Accuracy', v: scores.empathy },
-    { k: 'language', l: 'Language Style', v: scores.language },
-  ];
-  return (
-    <div className="space-y-2">
-      {items.map(it => (
-        <div key={it.k}>
-          <div className="flex justify-between text-xs text-slate-400 mb-1">
-            <span>{it.l}</span>
-            <span>{it.v}/5</span>
-          </div>
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div className="h-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" style={{ width: `${Math.max(2, Math.min(100, (it.v/5)*100))}%` }} />
-          </div>
+          )}
         </div>
-      ))}
+      </div>
     </div>
-  );
-}
-
-function MiniRadar({ scores }: { scores: { attachment: number; eq: number; conflict: number; empathy: number; language: number } }) {
-  const labels = ["Attach", "EQ", "Conflict", "Empathy", "Lang"];
-  const values = [scores.attachment, scores.eq, scores.conflict, scores.empathy, scores.language];
-  const max = 5;
-  const cx = 120, cy = 90;
-  const points = values.map((v, i) => {
-    const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
-    const r = (v / max) * 70;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    return `${x},${y}`;
-  });
-  return (
-    <svg viewBox="0 0 240 180" className="w-full h-48">
-      <g stroke="#334155" strokeOpacity="0.6" fill="none">
-        {[20,40,60,70].map(r => <circle key={r} cx={cx} cy={cy} r={r} />)}
-      </g>
-      <polygon points={points.join(' ')} fill="#10b981" fillOpacity="0.25" stroke="#10b981" strokeWidth={2} />
-      {points.map((p,i)=>{ const [x,y]=p.split(',').map(Number); return <circle key={i} cx={x} cy={y} r={3} fill="#22d3ee" />})}
-      {labels.map((t,i)=>{ const a=(Math.PI*2*i)/labels.length - Math.PI/2; const x=cx+80*Math.cos(a); const y=cy+80*Math.sin(a); return <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill="#cbd5e1" fontSize="10">{t}</text>; })}
-    </svg>
   );
 }

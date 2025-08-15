@@ -96,7 +96,7 @@ export default function TherapistsNetworkPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-24 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="text-center mb-12">

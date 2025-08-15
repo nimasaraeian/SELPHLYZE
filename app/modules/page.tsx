@@ -3,6 +3,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import StartConfirm from "@/components/StartConfirm";
+import dynamic from "next/dynamic";
+const ProfileGate = dynamic(() => import("@/components/ProfileGate"), { ssr: false });
 import { useLanguage } from "@/providers/LanguageProvider";
 import type { AppLanguage } from "@/providers/LanguageProvider";
 import { 
@@ -88,7 +90,8 @@ export default function ModulesPage() {
   const { language } = useLanguage();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-24 px-6">
+      <ProfileGate />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.header 
@@ -115,7 +118,7 @@ export default function ModulesPage() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               onHoverStart={() => setHoveredModule(module.id)}
               onHoverEnd={() => setHoveredModule(null)}
-              className="group relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm rounded-3xl border border-slate-700/50 hover:border-cyan-500/60 shadow-2xl hover:shadow-cyan-500/20 transition-all duration-700 hover:scale-[1.02]"
+              className="group relative overflow-hidden rounded-3xl border backdrop-blur-sm shadow-2xl transition-all duration-700 hover:scale-[1.02] bg-[var(--surface)] border-[var(--border)] hover:border-cyan-500/60 hover:shadow-cyan-500/20"
             >
               {/* Background Image */}
               <div className="absolute inset-0 z-0">
@@ -127,23 +130,23 @@ export default function ModulesPage() {
               </div>
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/80 z-10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-black/5 to-black/10 z-10" />
               
               {/* Content */}
               <div className="relative z-20 p-8 h-full flex flex-col">
                 {/* Icon */}
                 <div className="mb-6">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-lg`}>
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-lg preserve-white`}>
                     <module.icon className="w-8 h-8 text-white" />
                   </div>
                 </div>
 
                 {/* Title & Description */}
                 <div className="mb-6 flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors duration-300">
+                  <h3 className="text-2xl font-bold text-[var(--foreground)] mb-3 group-hover:text-cyan-700 transition-colors duration-300">
                     {module.name}
                   </h3>
-                  <p className="text-gray-300 group-hover:text-gray-200 leading-relaxed transition-colors duration-300">
+                  <p className="text-[var(--muted)] group-hover:text-cyan-800 leading-relaxed transition-colors duration-300">
                     {module.description}
                   </p>
                 </div>
@@ -157,7 +160,7 @@ export default function ModulesPage() {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 + idx * 0.1 }}
-                        className="px-3 py-1 bg-slate-800/60 backdrop-blur-sm text-gray-300 text-xs rounded-full border border-slate-600 group-hover:border-cyan-500/50 group-hover:text-cyan-300 transition-all duration-300"
+                        className="px-3 py-1 bg-black/5 backdrop-blur-sm text-[var(--muted)] text-xs rounded-full border border-[var(--border)] group-hover:border-cyan-500/50 group-hover:text-cyan-700 transition-all duration-300"
                       >
                         {feature}
                       </motion.span>
@@ -173,7 +176,7 @@ export default function ModulesPage() {
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r ${module.color} text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group-hover:shadow-cyan-500/25 flex items-center justify-center gap-2`}
+                    className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r ${module.color} text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group-hover:shadow-cyan-500/25 flex items-center justify-center gap-2 preserve-white`}
                   >
                     <span>Start Analysis</span>
                     <motion.div
@@ -220,12 +223,12 @@ export default function ModulesPage() {
           transition={{ delay: 0.8 }}
           className="text-center mt-16"
         >
-          <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700 max-w-2xl mx-auto">
+            <div className="bg-[var(--surface)] backdrop-blur-sm rounded-2xl p-8 border border-[var(--border)] max-w-2xl mx-auto">
             <div className="flex items-center justify-center gap-3 mb-4">
               <Zap className="w-6 h-6 text-cyan-400" />
-              <h2 className="text-xl font-bold text-white">AI-Powered Insights</h2>
+              <h2 className="text-xl font-bold text-[var(--foreground)]">AI-Powered Insights</h2>
             </div>
-            <p className="text-gray-300 mb-6">
+            <p className="text-[var(--muted)] mb-6">
               Each module uses advanced artificial intelligence to provide personalized psychological insights 
               and actionable recommendations based on your unique responses.
             </p>

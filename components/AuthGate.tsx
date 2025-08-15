@@ -11,7 +11,10 @@ export default function AuthGate({ onAuthed }: { onAuthed?: () => void }) {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && onAuthed) onAuthed();
+      // Avoid triggering on initial session to prevent reload loops
+      if (event === "SIGNED_IN" && session && onAuthed) {
+        onAuthed();
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [onAuthed]);
@@ -85,6 +88,13 @@ export default function AuthGate({ onAuthed }: { onAuthed?: () => void }) {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 

@@ -2,3 +2,18 @@ export { default, metadata } from "../psychology/page";
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -276,7 +276,7 @@ export default function ShoplyzePage() {
   const allAnswered = sections.every((s, si) => s.questions.every((_, qi) => !!(answers[si] && answers[si][qi] !== undefined)));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-emerald-950/20 to-black text-white py-12 px-6">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-12 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.header 

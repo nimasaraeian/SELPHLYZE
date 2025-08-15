@@ -77,6 +77,12 @@ create table if not exists public.profiles (
   languages text[] default '{}',
   user_type text check (user_type in ('therapist','client')),
   therapists text[] default '{}',
+  username text unique,
+  public boolean default false,
+  tagline text,
+  links jsonb default '{}',
+  timezone text,
+  primary_focus text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -94,6 +100,57 @@ create table if not exists public.test_results (
   created_at timestamp with time zone default now()
 );
 
+-- A/B testing events
+create table if not exists public.ab_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  experiment text not null,
+  variant text check (variant in ('A','B')) not null,
+  event_type text check (event_type in ('assign','view','click')) not null,
+  metadata jsonb default '{}',
+  created_at timestamptz default now()
+);
+
+alter table public.ab_events enable row level security;
+do $$ begin
+  create policy "ab_owner_insert" on public.ab_events for insert with check (true);
+  create policy "ab_owner_select" on public.ab_events for select using (true);
+exception when duplicate_object then null; end $$;
+
+-- Feedback table
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  context text, -- e.g., 'test:general-personality' or 'feature:search'
+  rating int check (rating between 1 and 5) not null,
+  comment text,
+  created_at timestamptz default now()
+);
+
+alter table public.feedback enable row level security;
+do $$ begin
+  create policy "feedback_insert" on public.feedback for insert with check (true);
+  create policy "feedback_select" on public.feedback for select using (true);
+exception when duplicate_object then null; end $$;
+
+-- Activity log (books purchased, podcasts listened, articles read)
+create table if not exists public.user_activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  category text check (category in ('book','podcast','article')) not null,
+  title text,
+  date timestamp with time zone,
+  payload jsonb default '{}',
+  created_at timestamp with time zone default now()
+);
+
+alter table public.user_activity enable row level security;
+do $$ begin
+  create policy "activity_owner_select" on public.user_activity for select using (auth.uid() = user_id);
+  create policy "activity_owner_insert" on public.user_activity for insert with check (auth.uid() = user_id);
+  create policy "activity_owner_delete" on public.user_activity for delete using (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+
 -- Storage (create a bucket named 'avatars' in Supabase dashboard)
 
 -- RLS policies (example permissive policies; adjust for production)
@@ -108,6 +165,93 @@ do $$ begin
   create policy "results_owner_select" on public.test_results for select using (auth.uid() = user_id);
   create policy "results_owner_insert" on public.test_results for insert with check (auth.uid() = user_id);
   create policy "results_owner_delete" on public.test_results for delete using (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+
+-- Modules and progress
+create table if not exists public.modules (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  description text,
+  steps int default 10,
+  cover_url text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.module_progress (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  module_id uuid references public.modules(id) on delete cascade,
+  current_step int default 0,
+  percent int default 0,
+  updated_at timestamptz default now(),
+  unique(user_id, module_id)
+);
+
+alter table public.module_progress enable row level security;
+do $$ begin
+  create policy "mp_owner_select" on public.module_progress for select using (auth.uid() = user_id);
+  create policy "mp_owner_upsert" on public.module_progress for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+
+-- Content library
+create type content_type as enum ('BOOK','PODCAST','ARTICLE');
+create type user_content_status as enum ('TO_READ','IN_PROGRESS','DONE');
+
+do $$ begin
+  perform 1 from pg_type where typname = 'content_type';
+exception when undefined_object then null; end $$;
+
+create table if not exists public.content (
+  id uuid primary key default gen_random_uuid(),
+  type content_type not null,
+  title text not null,
+  author text,
+  url text,
+  cover_url text,
+  tags text[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.user_content (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  content_id uuid references public.content(id) on delete cascade,
+  status user_content_status default 'TO_READ',
+  progress int default 0,
+  rating int,
+  notes jsonb,
+  saved_at timestamptz default now(),
+  completed_at timestamptz,
+  unique(user_id, content_id)
+);
+
+alter table public.user_content enable row level security;
+do $$ begin
+  create policy "uc_owner_all" on public.user_content for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+
+-- Activity feed
+create type activity_type as enum ('TEST_COMPLETED','MODULE_UPDATED','CONTENT_ADDED','CONTENT_COMPLETED','FEEDBACK_GIVEN');
+do $$ begin
+  perform 1 from pg_type where typname = 'activity_type';
+exception when undefined_object then null; end $$;
+
+create table if not exists public.activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  type activity_type not null,
+  ref_id text,
+  payload jsonb,
+  created_at timestamptz default now()
+);
+
+alter table public.activity enable row level security;
+do $$ begin
+  create policy "activity_owner_select" on public.activity for select using (auth.uid() = user_id);
+  create policy "activity_owner_insert" on public.activity for insert with check (auth.uid() = user_id);
 exception when duplicate_object then null; end $$;
 
 

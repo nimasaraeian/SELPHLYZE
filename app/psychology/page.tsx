@@ -175,7 +175,7 @@ const categories: {
 
 export default function PsychologyPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-16">
           <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">

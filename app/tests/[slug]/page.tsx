@@ -5,6 +5,8 @@ import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function TestFallbackPage({ params }: { params: { slug: string } }) {
   const { language } = useLanguage();
+  // Gate: ensure name/age/gender exist before proceeding with any test
+  const ProfileGate = require("@/components/ProfileGate").default;
 
   const t = {
     en: {
@@ -37,7 +39,8 @@ export default function TestFallbackPage({ params }: { params: { slug: string } 
   const L = (t as any)[language] || (t as any).en;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white flex items-center justify-center p-8">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center p-8">
+      <ProfileGate />
       <div className="max-w-xl text-center">
         <h1 className="text-3xl font-extrabold mb-4 bg-gradient-to-r from-teal-400 to-blue-500 bg-clip-text text-transparent">
           {L.title}
@@ -53,6 +56,7 @@ export default function TestFallbackPage({ params }: { params: { slug: string } 
     </main>
   );
 }
+
 
 
 

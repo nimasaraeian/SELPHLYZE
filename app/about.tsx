@@ -2,8 +2,8 @@ import React from 'react';
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <div className="max-w-5xl w-full bg-gray-900 rounded-2xl shadow-lg p-8 flex flex-col lg:flex-row gap-8">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center p-4">
+      <div className="max-w-5xl w-full bg-[var(--surface)] rounded-2xl shadow-lg p-8 flex flex-col lg:flex-row gap-8">
         
         {/* تصویر */}
         <div className="flex justify-center lg:justify-start">

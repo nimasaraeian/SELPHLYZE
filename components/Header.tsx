@@ -3,12 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-black border-b border-gray-700 shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 bg-[var(--surface)] border-b border-gray-700 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="block">
@@ -45,6 +46,9 @@ export default function Header() {
           </nav>
 
           {/* Mobile Menu Button */}
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden flex items-center justify-center w-10 h-10 text-gray-300 hover:text-white transition-colors duration-200"
@@ -63,7 +67,7 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-black border-t border-gray-700">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-[var(--surface)] border-t border-gray-700">
               <Link
                 href="/"
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors duration-200 font-medium text-lg"
@@ -112,6 +116,9 @@ export default function Header() {
               >
                 Contact
               </Link>
+              <div className="px-3 py-2">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         )}

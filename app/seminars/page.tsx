@@ -93,7 +93,7 @@ export default function SeminarsPage() {
                     quality={85}
                   />
                   {/* اطلاعات روی عکس */}
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end">
+                  <div className="absolute inset-0 bg-[var(--overlay)] backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end">
                     <div className="p-5 text-white">
                       <h3 className="text-lg font-bold mb-2">{seminar.title}</h3>
                       <p className="text-sm text-gray-300">📅 {seminar.date} | 📍 {seminar.location}</p>
@@ -108,7 +108,7 @@ export default function SeminarsPage() {
         {/* مودال */}
         {selectedImage && (
           <div
-            className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-[var(--overlay)] backdrop-blur-2xl z-50 flex items-center justify-center p-6"
             onClick={() => setSelectedImage(null)}
           >
             <div className="relative max-w-6xl max-h-full">
@@ -121,7 +121,7 @@ export default function SeminarsPage() {
                 quality={95}
               />
               <button
-                className="absolute top-6 right-6 w-12 h-12 bg-black/60 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-all duration-300 border border-white/20 text-xl font-bold"
+                className="absolute top-6 right-6 w-12 h-12 bg-[var(--overlay)]/80 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:opacity-90 transition-all duration-300 border border-white/20 text-xl font-bold"
                 onClick={() => setSelectedImage(null)}
               >
                 ✕

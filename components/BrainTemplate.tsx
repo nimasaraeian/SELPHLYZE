@@ -21,11 +21,16 @@ export default function BrainTemplate() {
         return;
       }
 
-      const prompt = `Analyze the following test responses and provide an insightful psychological summary. Focus on personality traits, tendencies, and practical recommendations. Keep it concise and structured.
+      const prompt = `Analyze the following Selphlyze test responses and produce a personalized, high-signal psychological report in the user's language.
 
-User Profile (if any): ${profile || '{}'}
-Personality Psychology Test (if any): ${pp || '{}'}
-General Personality Test (if any): ${general || '{}'}
+Constraints:
+- Structure with: Key Traits, Behavioral Tendencies, Strengths, Watch-outs, Practical Recommendations (3–5 items), and Next Steps.
+- Reference concrete cues from answers. Avoid generic statements. Keep to 180–260 words.
+
+Inputs (JSON):
+- userProfile: ${profile || '{}'}
+- personalityPsychologyTest: ${pp || '{}'}
+- generalPersonalityTest: ${general || '{}'}
 `;
 
       fetch("/api/analyze", {
@@ -67,6 +72,11 @@ General Personality Test (if any): ${general || '{}'}
           {language === 'fa' ? '🧠 نتایج تحلیل' : language === 'es' ? '🧠 Resultados del análisis' : '🧠 Analysis Results'}
         </h2>
         <div className="prose prose-invert max-w-none whitespace-pre-wrap">{aiText}</div>
+        <div className="mt-6">
+          <a href="/profile" className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-400 hover:to-blue-400 text-white font-semibold">
+            {language === 'fa' ? 'رفتن به صفحه پروفایل و مشاهده نتایج' : language === 'es' ? 'Ir a mi perfil para ver resultados' : 'Go to Profile to view results'}
+          </a>
+        </div>
       </div>
     );
   }
@@ -98,6 +108,11 @@ General Personality Test (if any): ${general || '{}'}
             <li key={idx}>{s}</li>
           ))}
         </ul>
+      </div>
+      <div className="mt-6">
+        <a href="/profile" className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-400 hover:to-blue-400 text-white font-semibold">
+          {language === 'fa' ? 'رفتن به صفحه پروفایل و مشاهده نتایج' : language === 'es' ? 'Ir a mi perfil para ver resultados' : 'Go to Profile to view results'}
+        </a>
       </div>
     </div>
   );

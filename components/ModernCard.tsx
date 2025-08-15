@@ -23,7 +23,7 @@ export default function ModernCard({
   title,
   description,
   icon: Icon,
-  iconColor = "text-teal-400",
+  iconColor = "text-teal-600",
   gradient = "from-teal-500 to-blue-500",
   image,
   badge,
@@ -43,9 +43,9 @@ export default function ModernCard({
 
   const variantClasses = {
     glass: "glass border border-white/20",
-    solid: "bg-slate-900/80 border border-slate-700",
+    solid: "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]",
     gradient: `bg-gradient-to-br ${gradient} text-white`,
-    minimal: "bg-white/5 border border-white/10"
+    minimal: "bg-[var(--surface)]/70 border border-[var(--border)]"
   };
 
   const hoverAnimations = {
@@ -85,7 +85,7 @@ export default function ModernCard({
 
       {/* Gradient Overlay for Images */}
       {image && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
       )}
 
       {/* Content */}
@@ -128,7 +128,7 @@ export default function ModernCard({
         <motion.h3 
           className={`
             text-xl font-bold mb-3 leading-tight
-            ${variant === "gradient" ? "text-white" : "text-white group-hover:text-teal-300"}
+            ${variant === "gradient" ? "text-white" : "text-[var(--foreground)]"}
             transition-colors duration-300
           `}
           initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ export default function ModernCard({
         <motion.p 
           className={`
             text-sm leading-relaxed mb-4
-            ${variant === "gradient" ? "text-white/90" : "text-gray-400 group-hover:text-gray-300"}
+            ${variant === "gradient" ? "text-white/90" : "text-[var(--muted)]"}
             transition-colors duration-300
           `}
           initial={{ opacity: 0 }}
@@ -329,7 +329,7 @@ export function ModuleCard({
     >
       {!isLocked && progress > 0 && (
         <div className="mt-4">
-          <div className="flex justify-between text-xs text-white/80 mb-2">
+          <div className="flex justify-between text-xs mb-2 text-[color:rgba(255,255,255,0.8)] [data-theme=light]:text-[var(--muted)]">
             <span>Progress</span>
             <span>{progress}%</span>
           </div>

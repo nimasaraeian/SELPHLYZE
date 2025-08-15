@@ -160,7 +160,7 @@ export default function BooksPage() {
     return () => { cancelled = true; };
   }, [refreshToken]);
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-24 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-extrabold">Psychology Books Library</h1>
@@ -176,29 +176,29 @@ export default function BooksPage() {
         </header>
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {library.map((cat) => (
-            <section key={cat.name} className="group relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-800/60 rounded-3xl border border-slate-700/50 hover:border-teal-500/60 transition">
-              <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-10 group-hover:opacity-20 transition`} />
-              <div className="relative p-8">
+            <section key={cat.name} className="group relative overflow-hidden rounded-3xl border bg-[var(--surface)] border-[var(--border)] hover:border-teal-500/60 transition shadow-[0_10px_30px_rgba(2,6,23,0.06)] hover:shadow-[0_16px_40px_rgba(2,6,23,0.10)]">
+                <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-10 group-hover:opacity-20 transition`} />
+                 <div className="relative p-8">
                 <h2 className="text-2xl font-bold mb-2">{cat.name}</h2>
-                <p className="text-slate-300 mb-6">Curated best-sellers and classics</p>
+                <p className="text-[var(--muted)] mb-6">Curated best-sellers and classics</p>
                 <div className="grid grid-cols-3 gap-3">
-                  {cat.books.slice(0,6).map((b) => {
+                  {cat.books.slice(0,6).map((b, i) => {
                     const key = `${b.title}__${b.author}`;
                     const cover = covers[key] || b.cover || UNSPLASH_PLACEHOLDER;
                     const isMissing = cover === UNSPLASH_PLACEHOLDER || (!covers[key] && !b.cover);
                     return (
-                    <a key={b.title} href={b.amazon} target="_blank" rel="noreferrer" className="group/book block">
+                    <a key={b.title} href={b.amazon} target="_blank" rel="noreferrer" className="group/book block transform transition hover:-translate-y-0.5" style={{ transitionDelay: `${i * 20}ms` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={cover} alt={b.title} className={`aspect-[2/3] w-full object-cover rounded-xl border ${isMissing ? 'border-rose-600' : 'border-slate-700'} group-hover:border-teal-500 transition`} />
+                      <img src={cover} alt={b.title} className={`aspect-[2/3] w-full object-cover rounded-xl border ${isMissing ? 'border-rose-600' : 'border-[var(--border)]'} group-hover:border-teal-500 transition`} />
                       {isMissing && <div className="mt-1 text-[10px] text-rose-400">Cover not found (using placeholder)</div>}
-                      <div className="mt-2 text-xs text-slate-300 line-clamp-2">{b.title}</div>
-                      <div className="text-[10px] text-slate-500">{b.author}</div>
+                      <div className="mt-2 text-xs text-[var(--foreground)] line-clamp-2">{b.title}</div>
+                      <div className="text-[10px] text-[var(--muted)]/80">{b.author}</div>
                     </a>
                   );})}
                 </div>
                 <div className="mt-6 flex gap-3">
-                  <a href={`https://www.amazon.com/s?k=${encodeURIComponent(cat.name+" psychology")}`} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-blue-600">Explore on Amazon</a>
-                  <button className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200">Wishlist</button>
+                  <a href={`https://www.amazon.com/s?k=${encodeURIComponent(cat.name+" psychology")}`} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-blue-600 preserve-white">Explore on Amazon</a>
+                  <button className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]">Wishlist</button>
                 </div>
               </div>
             </section>

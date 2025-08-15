@@ -10,26 +10,29 @@ export default function ContactPage() {
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      backgroundColor: 'var(--background)',
+      color: 'var(--foreground)'
     }}>
       <div style={{
-        backgroundColor: '#18181b',
+        backgroundColor: 'var(--surface)',
+        border: '1px solid var(--border)',
         borderRadius: '0.75rem',
         padding: '3rem',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.10)'
       }}>
         <h1 style={{ 
           fontSize: '2.25rem', 
           fontWeight: 'bold', 
           marginBottom: '1rem', 
           textAlign: 'center',
-          color: '#ffffff'
+          color: 'var(--foreground)'
         }}>
           Contact Me
         </h1>
         <p style={{ 
           textAlign: 'center', 
-          color: '#9ca3af', 
+          color: 'var(--muted)', 
           marginBottom: '2.5rem',
           fontSize: '1.125rem'
         }}>
@@ -42,7 +45,8 @@ export default function ContactPage() {
             alignItems: 'center', 
             gap: '1rem',
             padding: '1rem',
-            backgroundColor: '#000000',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem'
           }}>
             <HiOutlineMail style={{ fontSize: '1.25rem', color: '#3b82f6' }} />
@@ -59,11 +63,12 @@ export default function ContactPage() {
             alignItems: 'center', 
             gap: '1rem',
             padding: '1rem',
-            backgroundColor: '#000000',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem'
           }}>
             <FaPhoneAlt style={{ fontSize: '1.25rem', color: '#10b981' }} />
-            <p style={{ color: '#ffffff' }}>+90 536 291 4170</p>
+            <p style={{ color: 'var(--foreground)' }}>+90 536 291 4170</p>
           </div>
 
           <div style={{ 
@@ -71,11 +76,12 @@ export default function ContactPage() {
             alignItems: 'center', 
             gap: '1rem',
             padding: '1rem',
-            backgroundColor: '#000000',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem'
           }}>
             <FaMapMarkerAlt style={{ fontSize: '1.25rem', color: '#ef4444' }} />
-            <p style={{ color: '#ffffff' }}>Istanbul, Turkey</p>
+            <p style={{ color: 'var(--foreground)' }}>Istanbul, Turkey</p>
           </div>
 
           <div style={{ 
@@ -83,7 +89,8 @@ export default function ContactPage() {
             alignItems: 'center', 
             gap: '1rem',
             padding: '1rem',
-            backgroundColor: '#000000',
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem'
           }}>
             <FaLinkedin style={{ fontSize: '1.25rem', color: '#1d4ed8' }} />

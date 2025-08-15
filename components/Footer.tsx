@@ -49,7 +49,7 @@ export default function Footer() {
       
       {/* Main Footer Content */}
       <div className="relative glass-dark border-t border-white/10">
-        <div className="container-fluid py-16">
+        <div className="max-w-7xl mx-auto px-6 py-16">
           
           {/* Top Section */}
           <div className="grid lg:grid-cols-5 md:grid-cols-3 gap-12 mb-12">
@@ -68,7 +68,7 @@ export default function Footer() {
                     <Brain className="w-7 h-7 text-white" />
                   </div>
                   <span className="text-3xl font-bold text-gradient-psyche">
-                    SELPHLYZE
+                    AI Platform
                   </span>
                 </div>
 
@@ -175,7 +175,7 @@ export default function Footer() {
               
               {/* Copyright */}
               <div className="text-gray-400 text-sm">
-                © 2024 Selphlyze AI. All rights reserved. 
+                © 2024 AI Platform. All rights reserved. 
                 <span className="mx-2">•</span>
                 Built with ❤️ for mental health
               </div>
@@ -212,7 +212,7 @@ export default function Footer() {
               className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10"
             >
               <p className="text-gray-500 text-xs leading-relaxed text-center">
-                <strong className="text-gray-400">Medical Disclaimer:</strong> Selphlyze provides psychological insights and tools for educational purposes. 
+                <strong className="text-gray-400">Medical Disclaimer:</strong> This platform provides psychological insights and tools for educational purposes. 
                 Our AI-powered assessments are not substitutes for professional medical or psychological diagnosis. 
                 If you are experiencing severe mental health issues, please consult with a licensed healthcare provider.
               </p>

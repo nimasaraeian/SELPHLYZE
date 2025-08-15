@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+ import { useEffect, useMemo, useState } from "react";
+ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+const ProfileGate = dynamic(() => import("@/components/ProfileGate"), { ssr: false });
 import { translateArray } from "@/utils/i18nTest";
 import { useLanguage } from "@/providers/LanguageProvider";
 
@@ -413,6 +416,7 @@ const OPEN_Q31_35: OpenEndedItem[] = [
 ];
 
 export default function GeneralPersonalityTestPage() {
+  const router = useRouter();
   const { language } = useLanguage();
   const [tScenario1to15, setTScenario1to15] = useState<ScenarioItem[]>(SCENARIO_Q1_15);
   const [tScenarioLikert16to25, setTScenarioLikert16to25] = useState<ScenarioLikertItem[]>(SCENARIO_LIKERT_Q16_25);
@@ -530,7 +534,7 @@ export default function GeneralPersonalityTestPage() {
           }
         } catch {}
       })();
-      alert("Responses saved.");
+      router.push("/analysis");
     } catch {}
   };
 
@@ -599,7 +603,8 @@ export default function GeneralPersonalityTestPage() {
   }, [language]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white py-20 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-20 px-6">
+      <ProfileGate />
       {/* Start Confirm */}
       {/* Start modal removed per request */}
 

@@ -11,7 +11,6 @@ import {
   X,
   RefreshCw
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { detectLanguage, SupportedLanguage, SUPPORTED_LANGUAGES } from "@/utils/multilingual";
 import { useLanguage, normalizeToAppLanguage } from "@/providers/LanguageProvider";
 
@@ -29,14 +28,7 @@ export default function SimpleAISearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(globalLanguage);
-  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
-  const [displayName, setDisplayName] = useState<string>("");
-  const [ageRange, setAgeRange] = useState<string>("");
-  const [gender, setGender] = useState<string>("");
-  const [preferredLanguage, setPreferredLanguage] = useState<SupportedLanguage>("en");
-  const [savePermanently, setSavePermanently] = useState<boolean>(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
 
 
@@ -57,11 +49,10 @@ export default function SimpleAISearch() {
     setCurrentLanguage(globalLanguage);
   }, [globalLanguage]);
 
-  // Load chat history and user profile
+  // Load chat history only (no profile collection on landing)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedChat = localStorage.getItem("simpleAiChatHistory");
-      const savedProfile = localStorage.getItem("aiUserProfile");
       if (savedChat) {
         try {
           const parsedMessages = JSON.parse(savedChat);
@@ -74,45 +65,6 @@ export default function SimpleAISearch() {
           console.error("Error loading chat history:", error);
         }
       }
-      let shouldOpenProfileModal = false;
-      if (savedProfile) {
-        try {
-          const p = JSON.parse(savedProfile);
-          const hasDisplayName = Boolean(p.displayName && String(p.displayName).trim());
-          const hasAgeRange = Boolean(p.ageRange && String(p.ageRange).trim());
-          const hasGender = Boolean(p.gender && String(p.gender).trim());
-          const hasLanguage = Boolean(p.language && String(p.language).trim());
-
-          setDisplayName(p.displayName || "");
-          setAgeRange(p.ageRange || "");
-          setGender(p.gender || "");
-          if (p.language) {
-            setPreferredLanguage(p.language as SupportedLanguage);
-            setCurrentLanguage(p.language as SupportedLanguage);
-            setGlobalLanguage(normalizeToAppLanguage(p.language as SupportedLanguage));
-          }
-
-          if (!(hasDisplayName && hasAgeRange && hasGender && hasLanguage)) {
-            shouldOpenProfileModal = true;
-          }
-        } catch {
-          shouldOpenProfileModal = true;
-        }
-      } else {
-        shouldOpenProfileModal = true;
-      }
-
-      if (shouldOpenProfileModal) {
-        setShowProfileModal(true);
-      }
-
-      // Allow forcing the modal via URL parameter: ?profile=1 or ?forceModal=1
-      try {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('profile') === '1' || params.get('forceModal') === '1') {
-          setShowProfileModal(true);
-        }
-      } catch {}
     }
   }, []);
 
@@ -216,15 +168,9 @@ export default function SimpleAISearch() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
-    // Ensure profile is collected before search
-    if (!displayName || !ageRange || !gender || !preferredLanguage) {
-      setShowProfileModal(true);
-      return;
-    }
-
     // Prefer user's chosen language over detection
     const detectedLanguage = detectLanguage(searchQuery);
-    const languageToUse: SupportedLanguage = preferredLanguage || globalLanguage || detectedLanguage;
+    const languageToUse: SupportedLanguage = globalLanguage || detectedLanguage;
     setCurrentLanguage(languageToUse);
     setGlobalLanguage(normalizeToAppLanguage(languageToUse));
 
@@ -290,148 +236,23 @@ export default function SimpleAISearch() {
   return (
     <div className="w-full max-w-4xl mx-auto">
 
-      {/* Profile Modal */}
-      <AnimatePresence>
-        {showProfileModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-teal-500 to-blue-600 p-6 text-white">
-                <h3 className="text-xl font-bold">Personalize your AI</h3>
-                <p className="opacity-90 text-sm">Please provide a few details so we can tailor guidance.</p>
-              </div>
-              <div className="p-6 space-y-4 text-gray-800">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Display Name</label>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Enter a name you'd like me to use"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Age Range</label>
-                    <select
-                      value={ageRange}
-                      onChange={(e) => setAgeRange(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
-                    >
-                      <option value="">Select age range</option>
-                      <option value="15-20">15 - 20</option>
-                      <option value="20-25">20 - 25</option>
-                      <option value="25-30">25 - 30</option>
-                      <option value="30-35">30 - 35</option>
-                      <option value="35-40">35 - 40</option>
-                      <option value="40-45">40 - 45</option>
-                      <option value="45-50">45 - 50</option>
-                      <option value="50-60">50 - 60</option>
-                      <option value="60-70">60 - 70</option>
-                      <option value="70-80">70 - 80</option>
-                      <option value="80+">80+</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Gender</label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male ♂</option>
-                      <option value="female">Female ♀</option>
-                      <option value="other">Other / Prefer not to say</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Language</label>
-                  <select
-                    value={preferredLanguage}
-                    onChange={(e) => setPreferredLanguage(e.target.value as SupportedLanguage)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500"
-                  >
-                    <option value="">Select language</option>
-                    {SUPPORTED_LANGUAGES.map((lang) => (
-                      <option key={lang.code} value={lang.code}>
-                        {lang.flag} {lang.nativeName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <input
-                    id="savePermanently"
-                    type="checkbox"
-                    checked={savePermanently}
-                    onChange={(e) => setSavePermanently(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                  />
-                  <label htmlFor="savePermanently" className="text-sm text-gray-700 select-none">
-                    Save these details to my profile for future visits
-                  </label>
-                </div>
-
-                <button
-                  disabled={!displayName || !ageRange || !gender || !preferredLanguage}
-                  onClick={() => {
-                    const profile = {
-                      displayName,
-                      ageRange,
-                      gender,
-                      language: preferredLanguage,
-                    };
-                    if (typeof window !== 'undefined') {
-                      if (savePermanently) {
-                        localStorage.setItem('aiUserProfile', JSON.stringify(profile));
-                      } else {
-                        // Ensure it's not stored permanently
-                        localStorage.removeItem('aiUserProfile');
-                      }
-                    }
-                    setCurrentLanguage(preferredLanguage);
-                    setGlobalLanguage(normalizeToAppLanguage(preferredLanguage));
-                    setShowProfileModal(false);
-                  }}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                    displayName && ageRange && gender && preferredLanguage
-                      ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-lg'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Continue →
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Quick actions */}
-      <div className="flex items-center justify-end mb-2">
-        <button
-          type="button"
-          onClick={() => setShowProfileModal(true)}
-          className="text-sm text-teal-300 hover:text-teal-200 underline"
+      {/* Language selector (replaces Start) */}
+      <div className="flex items-center justify-center mb-4">
+        <select
+          value={currentLanguage}
+          onChange={(e) => {
+            const code = e.target.value as SupportedLanguage;
+            setCurrentLanguage(code);
+            setGlobalLanguage(normalizeToAppLanguage(code));
+          }}
+          className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white"
         >
-          Edit profile
-        </button>
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.flag} {lang.nativeName}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Search Bar */}
@@ -495,10 +316,10 @@ export default function SimpleAISearch() {
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 1 }}
               >
-                <RefreshCw className="w-5 h-5 text-white" />
+                <RefreshCw className="w-5 h-5 text-white preserve-white" />
               </motion.div>
             ) : (
-              <Send className="w-5 h-5 text-white" />
+              <Send className="w-5 h-5 text-white preserve-white" />
             )}
           </motion.button>
         </div>

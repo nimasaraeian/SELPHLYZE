@@ -97,7 +97,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white pt-20 px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] pt-20 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold mb-4">Projects & Innovations</h1>
@@ -108,10 +108,10 @@ export default function ProjectsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-16">
             {stats.map((stat, index) => (
-              <div key={index} className="bg-gray-800 p-6 rounded-xl text-center">
+              <div key={index} className="p-6 rounded-xl text-center bg-[var(--surface)] border border-[var(--border)]">
                 <div className="text-4xl mb-2">{stat.icon}</div>
                 <div className="text-2xl font-bold">{stat.number}</div>
-                <div className="text-gray-400">{stat.label}</div>
+                <div className="text-[var(--muted)]">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -122,22 +122,22 @@ export default function ProjectsPage() {
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-gray-900 border border-gray-700 rounded-2xl p-6 hover:border-gray-500 transition"
+                  className="rounded-2xl p-6 transition bg-[var(--surface)] border border-[var(--border)] hover:border-gray-400"
                 >
                   <div className="flex justify-between items-center mb-4">
                     <div className="text-3xl">{project.icon}</div>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm text-white ${getStatusColor(project.status)}`}
+                      className={`px-3 py-1 rounded-full text-sm text-white preserve-white ${getStatusColor(project.status)}`}
                     >
                       {project.status}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                  <p className="text-gray-400 italic mb-4">{project.subtitle}</p>
-                  <p className="text-gray-300 mb-4">{project.description}</p>
+                  <p className="text-[var(--muted)] italic mb-4">{project.subtitle}</p>
+                  <p className="text-[var(--muted)] mb-4">{project.description}</p>
                   <div className="mb-3">
                     <strong>Features:</strong>
-                    <ul className="list-disc list-inside text-gray-400">
+                    <ul className="list-disc list-inside text-[var(--muted)]">
                       {project.features.map((f, i) => (
                         <li key={i}>{f}</li>
                       ))}
@@ -149,7 +149,7 @@ export default function ProjectsPage() {
                       {project.technologies.map((t, i) => (
                         <span
                           key={i}
-                          className="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs border border-gray-600"
+                          className="px-3 py-1 rounded-full text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]"
                         >
                           {t}
                         </span>
