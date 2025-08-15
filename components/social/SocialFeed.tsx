@@ -211,7 +211,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     setPosts(prevPosts => 
       prevPosts.map(post => 
         post.id === postId 
-          ? { ...post, likesCount: post.likesCount + 1 }
+          ? { ...post, likesCount: (post.likesCount || post.engagement?.likes || 0) + 1 }
           : post
       )
     );
@@ -315,24 +315,24 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 <img
-                  src={post.user.profile.avatar || 'https://i.pravatar.cc/150'}
-                  alt={post.user.profile.fullName}
+                  src={post.author?.avatarUrl || post.user?.profile?.avatar || 'https://i.pravatar.cc/150'}
+                  alt={post.author?.name || post.user?.profile?.fullName || 'User'}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
                   <div className="flex items-center space-x-2">
                     <h3 className="font-semibold text-gray-900">
-                      {post.user.profile.fullName}
+                      {post.author?.name || post.user?.profile?.fullName || 'User'}
                     </h3>
-                    {post.user.verified && (
+                    {(post.author?.isVerified || post.user?.verified) && (
                       <Verified className="w-4 h-4 text-blue-500" />
                     )}
-                    <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${getRoleColor(post.user.role)}`}>
-                      {getRoleLabel(post.user.role)}
+                    <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${getRoleColor(post.author?.accountType || post.user?.role)}`}>
+                      {getRoleLabel(post.author?.accountType || post.user?.role)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-500">
-                    @{post.user.username} • {formatDate(post.createdAt)}
+                    @{post.author?.username || post.user?.username || 'user'} • {formatDate(post.createdAt || post.timestamp)}
                   </p>
                 </div>
               </div>
@@ -384,17 +384,17 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
                   className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors group"
                 >
                   <Heart className="w-5 h-5 group-hover:fill-current" />
-                  <span className="text-sm">{post.likesCount}</span>
+                  <span className="text-sm">{post.likesCount || post.engagement?.likes || 0}</span>
                 </button>
                 
                 <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors">
                   <MessageCircle className="w-5 h-5" />
-                  <span className="text-sm">{post.commentsCount}</span>
+                  <span className="text-sm">{post.commentsCount || post.engagement?.comments || 0}</span>
                 </button>
                 
                 <button className="flex items-center space-x-2 text-gray-500 hover:text-green-600 transition-colors">
                   <Share2 className="w-5 h-5" />
-                  <span className="text-sm">{post.sharesCount}</span>
+                  <span className="text-sm">{post.sharesCount || post.engagement?.shares || 0}</span>
                 </button>
               </div>
 
