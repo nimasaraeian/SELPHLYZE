@@ -13,8 +13,7 @@ import {
   Mail,
   Sparkles,
   ChevronDown,
-  Headphones,
-  BookOpen
+  GraduationCap
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
@@ -23,11 +22,9 @@ const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Social", href: "/social", icon: Users },
   { name: "Tests", href: "/tests", icon: TestTube },
-  { name: "Articles", href: "/psy-articles", icon: Brain },
   { name: "Modules", href: "/modules", icon: Sparkles },
+  { name: "Learning", href: "/learning", icon: GraduationCap },
   { name: "Therapists", href: "/therapists", icon: Users },
-  { name: "Podcasts", href: "/podcasts", icon: Headphones },
-  { name: "Books", href: "/books", icon: BookOpen },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Contact", href: "/contact", icon: Mail },
 ];
