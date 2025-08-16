@@ -13,7 +13,7 @@ Create `.env.local` in project root with the following variables:
 
 ```bash
 # OpenAI Configuration (Required for AI features)
-OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
