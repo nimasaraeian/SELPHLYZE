@@ -1,0 +1,84 @@
+[33m00136f8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m docs: add clean DEPLOYMENT.md (placeholders only)
+[33m43d648a[m docs: clean deployment guide (placeholders only)
+[33mb19972a[m Add clean DEPLOYMENT.md without secrets
+[33mb4cba64[m your commit message
+[33m53be4ac[m your commit message
+[33m77cda3c[m first commit
+[33ma81804b[m Remove API keys from documentation for security
+[33m918270f[m Final project completion: UI improvements, social page, profile features, and deployment ready
+[33m5d06880[m Fix SocialFeed undefined property errors - add safe navigation for post.user.profile and post data structure compatibility
+[33mbad6f23[m Complete social network implementation: authentication protection, real post creation, user interactions, follow system, suggested users
+[33ma78e3cd[m Complete user tracking and AI personalization: track all user activity, personalize AI responses with names, store conversations per user
+[33me20a9fe[m Complete user URL system: unique codes, public profiles, dynamic navbar with user menu, LinkedIn-style profile URLs
+[33m3c69ec1[m Complete profile integration: Private Me page with authentication, auto-redirect after signup/login, editable profile
+[33m6760534[m Complete authentication system: Create professional signup/login pages with multi-step registration, AI icon in navbar, and auth buttons
+[33mc49e7be[m Update navbar: rename Home to AI, Profile to Me, remove Contact from navigation
+[33mafc85b3[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Create Learning Center: consolidated articles, books, and podcasts into unified English interface
+[33mc1509d9[m Add Social Network foundation: types, database schema, feed component, and social page
+[33m647e994[m Fix Google Analytics component for production build
+[33m582319a[m Add Google Search Console verification file and meta tag
+[33ma1b2454[m Add Google Analytics integration and comprehensive SEO documentation
+[33mcdf29d9[m Add comprehensive SEO optimization: sitemap, robots.txt, meta tags, structured data
+[33m1c57935[m Final fix for supabase imports and build - ready for production
+[33m5c67314[m Fix supabase imports for production build
+[33m6a70719[m Fix hydration and hooks errors, update profile and synclyze components
+[33mb1f4370[m feat(shoplyze): add multi-section single-question flow (Watch, Home, Dining, Sofa, Car, Vacation, Bag, Glasses, Beverage); unify image layout; per-section completion; update analysis prompt
+[33mcd9c81e[m fix: build passed locally - update LanguageProvider and types
+[33m0a3d938[m fix(build): stable React namespace imports for context/hooks in LanguageProvider
+[33m138cda0[m chore(language): temporarily force English only to stabilize build
+[33m441ea7e[m fix(types): add MouseEvent type to onClick in TherapistMessaging modal
+[33m0cf61a4[m fix(types): normalize language before setting global in SimpleAISearch
+[33m94f6959[m fix(types): normalize detected language before setting global language (FloatingAIChat)
+[33m813057e[m fix(types): bridge SupportedLanguage to AppLanguage via normalizeToAppLanguage; update FloatingAIChat
+[33mab438e1[m fix(types): restrict BrainTemplate language branches to en|fa|es
+[33mec200f5[m fix(types): narrow multilingual UI in AISearchChat to supported languages (en|fa|es)
+[33m5795b9c[m fix(types): limit UI conditionals to supported languages (en|fa|es)
+[33mdae884f[m fix(types): restrict UI translations to supported languages (en|fa|es)
+[33mfa2de8a[m feat(language): strict typed LanguageProvider (en|fa|es) with safe hook; wrap app; fix modules page usage
+[33me6fdb9b[m feat(i18n): add full multilingual test UI + AI analysis language, add translate API, caching, and docs; deploy-ready README
+[33mbe06138[m tests(general): implement Q6Q35 UI per master prompt (7 options, Likert, notes, open-ended) with StartConfirm
+[33mdc7cc24[m ui(i18n): add StartConfirm modal (12 languages) before tests and modules; use global language for texts
+[33mcdaee0b[m tests: remove pre-test modal on tests page; click navigates directly to test
+[33m348fedd[m i18n(pref): keep site layout LTR/unchanged; only AI language changes; remove dir switching; update LanguageProvider
+[33m68111f1[m i18n(global): introduce LanguageProvider and wire layout + search + global chat to selected language; sync placeholders instantly
+[33m4582fb5[m i18n(search): ensure prompt uses detected language for all 12 langs; add Turkish fallbacks; tests page cards show images
+[33mcff3993[m i18n: improve Turkish detection (include 'merhaba' etc.); fix SimpleAISearch to pass detected language to API
+[33mc1c20c7[m feat: UI/UX redesign, multilingual AI (12 langs), therapists network, tests overhaul, modules hub; fix: AI chat timestamp/icon, scroll issue, language routing; chore: config/scripts and design system
+[33m287e024[m  Modern UI/UX Redesign Complete
+[33m5b8b67a[m  Fix UI structure issues and optimize AI chat components
+[33m857cb06[m  Complete Multilingual AI System Implementation
+[33m0c8ca3e[m  Final Release: Complete SELPHLYZE AI Platform
+[33m585e753[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on (no branch): 469fc66 تغییر فونت کل پروژه به Times New Roman
+[33m7c20757[m index on (no branch): 469fc66 تغییر فونت کل پروژه به Times New Roman
+[33m1b8afd3[m untracked files on (no branch): 469fc66 تغییر فونت کل پروژه به Times New Roman
+[33m3c429ec[m[33m ([m[1;31morigin/cursor/design-psychology-section-for-scientific-articles-26ea[m[33m)[m Create psychology articles page with dynamic article card sections
+[33m469fc66[m تغییر فونت کل پروژه به Times New Roman
+[33m5e1d2d7[m آخرین تغییرات
+[33macc0d08[m Fix: Correct import paths and create Footer component to resolve 404 error
+[33m2a8ecda[m Fix: Restore Next.js config for Vercel deployment
+[33m818ca19[m Ready for Vercel deployment - Updated configs and added vercel.json
+[33m6c5fb64[m 🔁 آخرین تغییرات پروژه Selphlyze
+[33m3594abb[m Fix AI analysis crash
+[33m0a30460[m Add Sync with Partner flow for Synclyze
+[33mb8b7231[m Update Synclyze page with styled questions and AI integration
+[33mbb52ff3[m fix: analyze route with OpenAI integration
+[33me47360e[m Add Synclyze page with AI integration
+[33mf9f30ac[m Add GET method to analyze route
+[33ma4cdc41[m fix: connect analyze route to OpenAI
+[33mec2b4f8[m Enable Netlify Next.js plugin
+[33m676e71f[m Add Netlify Next.js plugin
+[33m26e7f02[m First commit for Netlify deploy
+[33md51c254[m Force redeploy to fix 404
+[33m69e487e[m Force redeploy
+[33m3a79e47[m Add homepage with logo and search box
+[33m6d6d988[m Fix: remove Foodlyze module reference
+[33mb3c9334[m Fix: add placeholder components for empty modules
+[33m113484d[m Initial commit
+[33m1027287[m Save current Selphlyze version with AI analysis
+[33m6af65e2[m Add .gitignore and remove sensitive files
+[33ma04d748[m First working version with personality test and ChatGPT integration
+[33m37a591d[m update
+[33ma939804[m update
+[33m95528a1[m update
+[33mad76850[m توضیح تغییرات
+[33m15fb077[m First clean commit

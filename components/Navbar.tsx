@@ -145,8 +145,8 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className={`w-full fixed top-2 z-[999999] transition-all duration-500 ${
-          scrolled
-            ? "glass-dark shadow-2xl py-4"
+          scrolled 
+            ? "glass-dark shadow-2xl py-4" 
             : "bg-white/95 backdrop-blur-md border-b border-gray-200 py-6"
         }`}
       >
@@ -170,9 +170,9 @@ export default function Navbar() {
               <div className="hidden lg:flex items-center space-x-1">
                                  {navItems.map((item) => {
                    const Icon = item.icon;
-                   const isActive = pathname === item.href;
-                   
-                   return (
+                const isActive = pathname === item.href;
+                
+                return (
                      <motion.button
                        key={item.label}
                        whileHover={{ scale: 1.05 }}
@@ -196,8 +196,8 @@ export default function Navbar() {
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                       </div>
                     </motion.button>
-                  );
-                })}
+                );
+              })}
               </div>
             </div>
 
@@ -206,16 +206,16 @@ export default function Navbar() {
               
               {/* Search */}
               <div className="relative" ref={searchRef}>
-                <button
+                  <button
                   onClick={() => setShowSearch(!showSearch)}
                   className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Search className="w-6 h-6" />
-                </button>
-                
-                <AnimatePresence>
+                  </button>
+
+                  <AnimatePresence>
                   {showSearch && (
-                    <motion.div
+                      <motion.div
                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -232,7 +232,7 @@ export default function Navbar() {
                             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             autoFocus
                           />
-                        </div>
+                            </div>
                         
                         <div className="flex items-center justify-between text-sm text-gray-500">
                           <span>Quick filters:</span>
@@ -304,11 +304,11 @@ export default function Navbar() {
                             <p className="text-gray-500 text-xs">Great article you shared!</p>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
               {/* Notifications */}
               <div className="relative" ref={notificationsRef}>
@@ -346,8 +346,8 @@ export default function Navbar() {
                             </p>
                             <p className="text-gray-500 text-xs">2 hours ago</p>
                           </div>
-                        </div>
-                        
+            </div>
+            
                         <div className="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
                           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <Award className="w-4 h-4 text-green-600" />
@@ -360,10 +360,10 @@ export default function Navbar() {
                           </div>
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+        </div>
 
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>
@@ -387,7 +387,7 @@ export default function Navbar() {
                 
                 <AnimatePresence>
                   {showUserMenu && (
-                    <motion.div
+                      <motion.div
                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -401,7 +401,7 @@ export default function Navbar() {
                              alt="Profile"
                              className="w-12 h-12 rounded-full object-cover"
                            />
-                           <div>
+                        <div>
                              <p className="font-semibold text-gray-900">
                                {user?.firstName || 'User'} {user?.lastName || 'Name'}
                              </p>
@@ -504,10 +504,10 @@ export default function Navbar() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
       </motion.nav>
 
       {/* Mobile Navigation Overlay */}

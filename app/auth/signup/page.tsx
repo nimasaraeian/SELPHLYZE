@@ -91,7 +91,7 @@ export default function SignUpPage() {
     'Expert (15+ years)'
   ];
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -144,7 +144,7 @@ export default function SignUpPage() {
     setStep(step - 1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateStep(4)) {
       try {

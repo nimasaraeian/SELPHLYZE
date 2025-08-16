@@ -241,22 +241,22 @@ export default function SocialPage() {
                   className="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
                 />
               </div>
-            </div>
+              </div>
 
             {/* Center Section */}
             <div className="flex items-center space-x-1">
               {['feed', 'network', 'learning', 'jobs'].map((tab) => (
-                <button
+                    <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === tab
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
+                      }`}
+                    >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
+                    </button>
               ))}
             </div>
 
@@ -273,15 +273,15 @@ export default function SocialPage() {
                 onClick={() => setShowCreatePost(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
               >
-                <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5" />
                 <span>Create Post</span>
-              </button>
+                </button>
+            </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
+          {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
@@ -371,20 +371,20 @@ export default function SocialPage() {
               </div>
 
               {/* Trending Topics */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Trending Topics</h3>
-                <div className="space-y-3">
-                  {trendingTopics.map((topic) => (
-                    <div key={topic.tag} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                      <div>
-                        <span className="font-medium text-blue-600">#{topic.tag}</span>
-                        <p className="text-sm text-gray-500">{topic.posts} posts</p>
-                      </div>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Trending Topics</h3>
+                  <div className="space-y-3">
+                    {trendingTopics.map((topic) => (
+                      <div key={topic.tag} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                        <div>
+                          <span className="font-medium text-blue-600">#{topic.tag}</span>
+                          <p className="text-sm text-gray-500">{topic.posts} posts</p>
+                        </div>
                       <TrendingUp className={`w-5 h-5 ${topic.trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />
-                    </div>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
 
@@ -401,7 +401,7 @@ export default function SocialPage() {
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
                   onClick={() => setShowCreatePost(false)}
                 >
-                  <motion.div
+              <motion.div
                     className="bg-white rounded-xl shadow-2xl w-full max-w-2xl"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -425,7 +425,7 @@ export default function SocialPage() {
                            src={`https://ui-avatars.com/api/?name=${user?.firstName || 'User'}&background=0D9488&color=fff&size=40`}
                            alt="Profile"
                            className="w-10 h-10 rounded-full object-cover"
-                         />
+                        />
                         <div className="flex-1">
                           <textarea
                             value={newPostContent}
@@ -445,8 +445,8 @@ export default function SocialPage() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                              </button>
-                            </div>
+                        </button>
+                      </div>
                           )}
                           
                           <div className="mt-4 flex items-center justify-between">
@@ -484,22 +484,22 @@ export default function SocialPage() {
                                 Post
                               </button>
                             </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
+                    </div>
+                  </div>
+                </div>
                   </motion.div>
-                </motion.div>
-              )}
+              </motion.div>
+            )}
             </AnimatePresence>
 
             {/* Posts Feed */}
             <div className="space-y-6">
               {mockPosts.map((post) => (
-                <motion.div
+              <motion.div
                   key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                   className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
                 >
                   {/* Post Header */}
@@ -527,8 +527,8 @@ export default function SocialPage() {
                       <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
+                      </div>
                     </div>
-                  </div>
 
                   {/* Post Content */}
                   <div className="p-4">
@@ -551,8 +551,8 @@ export default function SocialPage() {
                           #{tag}
                         </span>
                       ))}
-                    </div>
-                  </div>
+                        </div>
+                      </div>
 
                   {/* Post Stats */}
                   <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
@@ -585,9 +585,9 @@ export default function SocialPage() {
                         <Send className="w-5 h-5" />
                         <span>Send</span>
                       </button>
-                    </div>
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
               ))}
             </div>
           </div>
@@ -615,15 +615,15 @@ export default function SocialPage() {
                               <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
                           )}
-                        </div>
+                  </div>
                         <p className="text-sm text-gray-600">{connection.title}</p>
                         <p className="text-xs text-gray-500">{connection.company}</p>
                         <p className="text-xs text-blue-600">{connection.mutualConnections} mutual connections</p>
-                      </div>
+                  </div>
                       <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
                         Connect
                       </button>
-                    </div>
+                  </div>
                   ))}
                 </div>
               </div>
@@ -645,7 +645,7 @@ export default function SocialPage() {
                         <p className="text-xs text-gray-500">{event.attendees} attending</p>
                         <button className="w-full mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
                           Join Event
-                        </button>
+                  </button>
                       </div>
                     </div>
                   ))}
