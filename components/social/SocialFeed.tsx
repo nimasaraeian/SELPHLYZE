@@ -234,12 +234,12 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
       user: {
         id: user.id,
         email: user.email || '',
-        username: user.username || user.userCode || 'user',
-        role: user.accountType === 'therapist' ? 'psychologist' : 'client',
-        verified: user.verified || false,
+        username: (user as any).username || user.userCode || 'user',
+        role: (user.accountType as any) === 'therapist' ? 'psychologist' : 'client',
+        verified: (user as any).verified || false,
         profile: {
-          fullName: user.firstName ? `${user.firstName} ${user.lastName}` : user.name || 'User',
-          avatar: user.avatarDataUrl || 'https://i.pravatar.cc/40?img=1',
+          fullName: user.firstName ? `${user.firstName} ${user.lastName}` : (user as any).name || 'User',
+          avatar: (user as any).avatarDataUrl || 'https://i.pravatar.cc/40?img=1',
           bio: '',
           followersCount: 0,
           followingCount: 0,
@@ -362,7 +362,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
           <div className="flex items-start gap-4">
             {/* User Avatar */}
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
+              {user.firstName ? user.firstName[0] : (user as any).name ? (user as any).name[0] : 'U'}
             </div>
             
             {/* Post Input */}

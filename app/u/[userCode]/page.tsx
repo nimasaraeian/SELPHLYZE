@@ -68,7 +68,7 @@ export default function PublicProfilePage() {
 
   const generateMockProfile = (code: string) => {
     // Generate mock profile based on userCode
-    const profiles = {
+    const profiles: { [key: string]: any } = {
       'clinpsyc2024': {
         firstName: 'Dr. Sarah',
         lastName: 'Johnson',

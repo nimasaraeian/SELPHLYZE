@@ -7,7 +7,7 @@ import { socialManager } from '@/utils/socialInteractions';
 import { useUserTracking } from '@/hooks/useUserTracking';
 
 export default function SuggestedUsers() {
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [followStates, setFollowStates] = useState<{ [key: string]: boolean }>({});
   const { getUserContext } = useUserTracking();
   const user = getUserContext();

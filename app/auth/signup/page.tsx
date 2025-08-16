@@ -41,7 +41,7 @@ export default function SignUpPage() {
     agreeTerms: false,
     agreePrivacy: false
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const accountTypes = [
     {
@@ -91,16 +91,17 @@ export default function SignUpPage() {
     'Expert (15+ years)'
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const target = e.target as HTMLInputElement;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? target.checked : value
     }));
   };
 
-  const validateStep = (stepNumber) => {
-    const newErrors = {};
+  const validateStep = (stepNumber: number) => {
+    const newErrors: { [key: string]: string } = {};
     
     if (stepNumber === 1) {
       if (!accountType) newErrors.accountType = 'Please select an account type';
@@ -654,7 +655,7 @@ export default function SignUpPage() {
                   Back
                 </button>
                 <button
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit({} as React.FormEvent<HTMLFormElement>)}
                   className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium"
                 >
                   Create Account

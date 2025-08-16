@@ -401,9 +401,9 @@ export default function SocialPage() {
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
                   onClick={() => setShowCreatePost(false)}
                 >
-              <motion.div
+                                <motion.div
                     className="bg-white rounded-xl shadow-2xl w-full max-w-2xl"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   >
                     <div className="p-6 border-b border-gray-200">
                       <div className="flex items-center justify-between">
