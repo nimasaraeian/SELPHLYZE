@@ -68,24 +68,14 @@ export default function AISearchChat() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  // Load chat history from localStorage
+  // Don't load chat history - start fresh each time
   useEffect(() => {
+    // Clear any existing chat history when component mounts
     if (typeof window !== 'undefined') {
-      const savedChat = localStorage.getItem("aiChatHistory");
-      if (savedChat) {
-        try {
-          const parsedMessages = JSON.parse(savedChat);
-          // Convert timestamp strings back to Date objects
-          const messagesWithDates = parsedMessages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp)
-          }));
-          setChatMessages(messagesWithDates);
-        } catch (error) {
-          console.error("Error loading chat history:", error);
-        }
-      }
+      localStorage.removeItem("aiChatHistory");
     }
+    // Start with empty chat messages
+    setChatMessages([]);
   }, []);
 
   // Save chat to localStorage

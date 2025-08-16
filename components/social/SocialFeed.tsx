@@ -141,7 +141,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
 
   useEffect(() => {
     if (posts.length === 0) {
-      setPosts(mockPosts);
+      setPosts(mockPosts.map(post => validatePost(post)));
     }
   }, []);
 
@@ -157,7 +157,9 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
       const savedPosts = localStorage.getItem('socialPosts');
       if (savedPosts) {
         const allPosts = JSON.parse(savedPosts);
-        setPosts([...allPosts, ...mockPosts]);
+        // Ensure all posts have required fields
+        const validatedPosts = allPosts.map((post: any) => validatePost(post));
+        setPosts([...validatedPosts, ...mockPosts]);
       } else {
         setPosts(mockPosts);
       }
@@ -167,28 +169,114 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     }
   };
 
+  // Validate post data to ensure all required fields exist
+  const validatePost = (post: any) => {
+    return {
+      ...post,
+      id: post.id || Date.now().toString(),
+      userId: post.userId || 'unknown',
+      user: post.user || {
+        id: 'unknown',
+        email: '',
+        username: 'user',
+        role: 'client',
+        verified: false,
+        profile: {
+          fullName: 'User',
+          avatar: 'https://i.pravatar.cc/40?img=1',
+          bio: '',
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+        },
+        settings: {
+          privacy: {
+            profileVisibility: 'public',
+            allowMessages: true,
+            showActivity: true,
+            anonymousPosting: false,
+          },
+          notifications: {
+            email: true,
+            push: true,
+            mentions: true,
+            comments: true,
+            followers: true,
+          },
+          feed: {
+            algorithm: 'relevance',
+            contentTypes: ['text'],
+            showSensitiveContent: false,
+          },
+        },
+        createdAt: new Date(),
+        lastActive: new Date(),
+      },
+      content: post.content || '',
+      type: post.type || 'text',
+      visibility: post.visibility || 'public',
+      tags: post.tags || [],
+      likesCount: post.likesCount || 0,
+      commentsCount: post.commentsCount || 0,
+      sharesCount: post.sharesCount || 0,
+      aiAnalysis: post.aiAnalysis || null,
+      createdAt: post.createdAt || new Date(),
+      updatedAt: post.updatedAt || new Date(),
+    };
+  };
+
   const createPost = () => {
     if (!newPost.trim() || !user) return;
 
     const post: Post = {
       id: Date.now().toString(),
-      content: newPost,
-      timestamp: new Date().toISOString(),
-      author: {
+      userId: user.id,
+      user: {
         id: user.id,
-        name: user.firstName ? `${user.firstName} ${user.lastName}` : user.name || 'User',
-        username: user.username || user.userCode,
-        avatarUrl: user.avatarDataUrl || 'https://i.pravatar.cc/40?img=1',
-        isVerified: user.verified || false,
-        accountType: user.accountType || 'individual'
+        email: user.email || '',
+        username: user.username || user.userCode || 'user',
+        role: user.accountType === 'therapist' ? 'psychologist' : 'client',
+        verified: user.verified || false,
+        profile: {
+          fullName: user.firstName ? `${user.firstName} ${user.lastName}` : user.name || 'User',
+          avatar: user.avatarDataUrl || 'https://i.pravatar.cc/40?img=1',
+          bio: '',
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+        },
+        settings: {
+          privacy: {
+            profileVisibility: 'public',
+            allowMessages: true,
+            showActivity: true,
+            anonymousPosting: false,
+          },
+          notifications: {
+            email: true,
+            push: true,
+            mentions: true,
+            comments: true,
+            followers: true,
+          },
+          feed: {
+            algorithm: 'relevance',
+            contentTypes: ['text'],
+            showSensitiveContent: false,
+          },
+        },
+        createdAt: new Date(),
+        lastActive: new Date(),
       },
-      engagement: {
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        isLiked: false
-      },
-      comments: []
+      content: newPost,
+      type: 'text',
+      visibility: 'public',
+      tags: [],
+      likesCount: 0,
+      commentsCount: 0,
+      sharesCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const newPosts = [post, ...posts];
@@ -211,20 +299,37 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
     setPosts(prevPosts => 
       prevPosts.map(post => 
         post.id === postId 
-          ? { ...post, likesCount: (post.likesCount || post.engagement?.likes || 0) + 1 }
+          ? { ...post, likesCount: (post.likesCount || 0) + 1 }
           : post
       )
     );
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'recently';
+    
+    let dateObj: Date;
+    
+    // Handle different date formats
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return 'recently';
+      }
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      return 'recently';
+    }
+    
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) return 'now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 48) return 'yesterday';
-    return date.toLocaleDateString('en-US');
+    return dateObj.toLocaleDateString('en-US');
   };
 
   const getRoleColor = (role: string) => {
@@ -315,24 +420,24 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 <img
-                  src={post.author?.avatarUrl || post.user?.profile?.avatar || 'https://i.pravatar.cc/150'}
-                  alt={post.author?.name || post.user?.profile?.fullName || 'User'}
+                  src={post.user?.profile?.avatar || 'https://i.pravatar.cc/150'}
+                  alt={post.user?.profile?.fullName || 'User'}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
                   <div className="flex items-center space-x-2">
                     <h3 className="font-semibold text-gray-900">
-                      {post.author?.name || post.user?.profile?.fullName || 'User'}
+                      {post.user?.profile?.fullName || 'User'}
                     </h3>
-                    {(post.author?.isVerified || post.user?.verified) && (
+                    {post.user?.verified && (
                       <Verified className="w-4 h-4 text-blue-500" />
                     )}
-                    <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${getRoleColor(post.author?.accountType || post.user?.role)}`}>
-                      {getRoleLabel(post.author?.accountType || post.user?.role)}
+                    <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${getRoleColor(post.user?.role)}`}>
+                      {getRoleLabel(post.user?.role)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-500">
-                    @{post.author?.username || post.user?.username || 'user'} • {formatDate(post.createdAt || post.timestamp)}
+                    @{post.user?.username || 'user'} • {formatDate(post.createdAt)}
                   </p>
                 </div>
               </div>
@@ -345,11 +450,11 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
           {/* Post Content */}
           <div className="px-6 pb-3">
             <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-              {post.content}
+              {post.content || 'No content available'}
             </p>
             
             {/* Tags */}
-            {post.tags.length > 0 && (
+            {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {post.tags.map((tag) => (
                   <span
@@ -363,7 +468,7 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
             )}
 
             {/* AI Analysis Indicator */}
-            {post.aiAnalysis && (
+            {post.aiAnalysis && post.aiAnalysis.topics && (
               <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -384,17 +489,17 @@ export default function SocialFeed({ initialPosts = [], userId }: SocialFeedProp
                   className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors group"
                 >
                   <Heart className="w-5 h-5 group-hover:fill-current" />
-                  <span className="text-sm">{post.likesCount || post.engagement?.likes || 0}</span>
+                  <span className="text-sm">{post.likesCount || 0}</span>
                 </button>
                 
                 <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors">
                   <MessageCircle className="w-5 h-5" />
-                  <span className="text-sm">{post.commentsCount || post.engagement?.comments || 0}</span>
+                  <span className="text-sm">{post.commentsCount || 0}</span>
                 </button>
                 
                 <button className="flex items-center space-x-2 text-gray-500 hover:text-green-600 transition-colors">
                   <Share2 className="w-5 h-5" />
-                  <span className="text-sm">{post.sharesCount || post.engagement?.shares || 0}</span>
+                  <span className="text-sm">{post.sharesCount || 0}</span>
                 </button>
               </div>
 

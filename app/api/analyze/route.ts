@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findRelevantReferences, generateRecommendationText } from "@/utils/psychologyReferences";
+// import { findRelevantReferences, generateRecommendationText } from "@/utils/psychologyReferences";
 // Supabase is optional for RAG. We'll load it lazily only if envs are present.
 
 export const dynamic = "force-dynamic";
@@ -139,9 +139,21 @@ ${contextBlocks.join("\n\n")}
     ];
 
     if (!apiKey) {
+      // Provide helpful fallback responses for psychology questions
+      const fallbackResponses = {
+        en: "🔑 OpenAI API key is not configured. To enable AI features, please:\n\n1. Create a .env.local file in your project root\n2. Add: OPENAI_API_KEY=sk-your-key-here\n3. Get your key from: https://platform.openai.com/api-keys\n4. Restart your development server\n\nFor now, here's a general psychology tip: Practice mindfulness meditation for 10 minutes daily to reduce stress and improve mental clarity.",
+        fa: "🔑 کلید API OpenAI تنظیم نشده است. برای فعال‌سازی ویژگی‌های AI، لطفاً:\n\n1. فایل .env.local در ریشه پروژه ایجاد کنید\n2. این خط را اضافه کنید: OPENAI_API_KEY=sk-your-key-here\n3. کلید خود را از اینجا دریافت کنید: https://platform.openai.com/api-keys\n4. سرور توسعه را مجدداً راه‌اندازی کنید\n\nفعلاً، یک نکته روانشناسی عمومی: روزانه 10 دقیقه مدیتیشن ذهن‌آگاهی انجام دهید تا استرس کاهش یابد و وضوح ذهنی بهبود یابد.",
+        ar: "🔑 مفتاح OpenAI API غير مُكوّن. لتمكين ميزات الذكاء الاصطناعي، يرجى:\n\n1. إنشاء ملف .env.local في جذر المشروع\n2. إضافة: OPENAI_API_KEY=sk-your-key-here\n3. احصل على مفتاحك من: https://platform.openai.com/api-keys\n4. أعد تشغيل خادم التطوير\n\nفي الوقت الحالي، نصيحة نفسية عامة: مارس التأمل الذهني لمدة 10 دقائق يومياً لتقليل التوتر وتحسين الوضوح العقلي.",
+        tr: "🔑 OpenAI API anahtarı yapılandırılmamış. AI özelliklerini etkinleştirmek için lütfen:\n\n1. Proje kökünde .env.local dosyası oluşturun\n2. Şunu ekleyin: OPENAI_API_KEY=sk-your-key-here\n3. Anahtarınızı buradan alın: https://platform.openai.com/api-keys\n4. Geliştirme sunucusunu yeniden başlatın\n\nŞimdilik, genel bir psikoloji ipucu: Stresi azaltmak ve zihinsel netliği artırmak için günde 10 dakika farkındalık meditasyonu yapın.",
+        es: "🔑 La clave API de OpenAI no está configurada. Para habilitar las funciones de IA, por favor:\n\n1. Crea un archivo .env.local en la raíz del proyecto\n2. Agrega: OPENAI_API_KEY=sk-your-key-here\n3. Obtén tu clave de: https://platform.openai.com/api-keys\n4. Reinicia tu servidor de desarrollo\n\nPor ahora, un consejo de psicología general: Practica meditación de atención plena durante 10 minutos diarios para reducir el estrés y mejorar la claridad mental.",
+        fr: "🔑 La clé API OpenAI n'est pas configurée. Pour activer les fonctionnalités d'IA, veuillez:\n\n1. Créer un fichier .env.local à la racine du projet\n2. Ajouter: OPENAI_API_KEY=sk-your-key-here\n3. Obtenir votre clé depuis: https://platform.openai.com/api-keys\n4. Redémarrer votre serveur de développement\n\nPour l'instant, un conseil de psychologie général: Pratiquez la méditation de pleine conscience pendant 10 minutes par jour pour réduire le stress et améliorer la clarté mentale."
+      };
+      
+      const fallbackResponse = fallbackResponses[language as keyof typeof fallbackResponses] || fallbackResponses.en;
+      
       return NextResponse.json({
         status: "success",
-        aiResponse: language === "fa" ? "کلید OpenAI تنظیم نشده است؛ پاسخ پیش‌فرض ارائه شد." : "OpenAI key is missing; returning a default response.",
+        aiResponse: fallbackResponse,
       });
     }
 
@@ -165,18 +177,7 @@ ${contextBlocks.join("\n\n")}
     // Get AI response
     let aiResponse = data.choices?.[0]?.message?.content || "⚠️ No content from AI";
     
-    // Add smart recommendations if this is a psychology question
-    try {
-      const userInput = latestUserText;
-      const references = findRelevantReferences(userInput, 6);
-      const recommendations = generateRecommendationText(references, language);
-      
-      if (recommendations) {
-        aiResponse += recommendations;
-      }
-    } catch (error) {
-      console.error("Error generating recommendations:", error);
-    }
+    // Recommendations removed - AI will only provide direct answers without book/podcast/article suggestions
 
     return NextResponse.json({
       status: "success",

@@ -14,7 +14,7 @@ export default function TestsPage() {
       title: "Micro Tests",
       href: "/tests/micro",
       icon: Zap,
-      cover: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop&crop=center&auto=format&q=80",
+      cover: "/image/microteasts.jpeg",
       gradient: "from-orange-500 to-red-600",
       bgGradient: "from-orange-50 to-red-100 dark:from-orange-900/20 dark:to-red-900/20",
       borderColor: "border-orange-200 dark:border-orange-800",
@@ -25,7 +25,7 @@ export default function TestsPage() {
       title: "Deep Tests",
       href: "/modules", 
       icon: Brain,
-      cover: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=600&h=400&fit=crop&crop=center&auto=format&q=80",
+      cover: "/image/deep.jpeg",
       gradient: "from-indigo-500 to-purple-600",
       bgGradient: "from-indigo-50 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20",
       borderColor: "border-indigo-200 dark:border-indigo-800",
@@ -58,7 +58,7 @@ export default function TestsPage() {
         </div>
 
         {/* Two Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16 max-w-6xl mx-auto">
           {cards.map((card, index) => {
             const Icon = card.icon;
             return (
@@ -71,13 +71,23 @@ export default function TestsPage() {
                 className="group"
               >
                 <Link href={card.href}>
-                  <div className="relative overflow-hidden rounded-3xl h-[460px] shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div className="relative overflow-hidden rounded-3xl h-[380px] lg:h-[420px] shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {/* Cover Image */}
-                    <div className="relative h-72 overflow-hidden">
+                    <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center min-h-[224px]">
                       <img 
                         src={card.cover} 
                         alt={card.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                        style={{ 
+                          maxHeight: '224px', 
+                          minHeight: '224px',
+                          objectPosition: 'center center',
+                          width: '100%',
+                          height: '100%',
+                          display: 'block',
+                          transform: 'scale(0.85)'
+                        }}
                       />
                       
                       {/* Gradient Overlay */}
@@ -138,18 +148,18 @@ export default function TestsPage() {
                     {/* Shine Effect */}
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
                       <div className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-1000" />
-                    </div>
-                  </div>
-                </Link>
+              </div>
+              </div>
+            </Link>
               </motion.div>
             );
           })}
         </div>
 
         {/* Stats Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
         >
@@ -163,7 +173,7 @@ export default function TestsPage() {
             <div className="text-[var(--muted)] text-xl">Deep Test Modules</div>
             <div className="text-[var(--muted)] text-sm mt-2">15-30 minutes each</div>
           </div>
-        </motion.div>
+                </motion.div>
       </div>
     </div>
   );

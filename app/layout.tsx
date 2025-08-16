@@ -9,10 +9,18 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import UserTrackingProvider from "@/components/UserTrackingProvider";
+
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const serif = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://selphlyze.com"),
@@ -59,7 +67,6 @@ export const metadata: Metadata = {
     description: 'Discover your psychological patterns with AI-powered analysis',
     images: ['/image/SELPHLYZE_LOGO.png'],
   },
-  viewport: 'width=device-width, initial-scale=1',
   category: 'psychology',
   verification: {
     google: 'a749cf479c48223f',

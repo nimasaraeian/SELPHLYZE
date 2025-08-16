@@ -1,446 +1,539 @@
 "use client";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { 
-  Menu, 
-  X, 
-  Brain, 
-  TestTube, 
-  Users, 
-  User, 
-  Sparkles,
-  ChevronDown,
-  GraduationCap,
-  LogOut,
-  Settings,
-  ExternalLink
-} from "lucide-react";
-import { usePathname } from "next/navigation";
-import ThemeToggle from "./ThemeToggle";
 
-const getNavItems = (user: any) => [
-  { name: "AI", href: "/", icon: Brain },
-  { name: "Social", href: "/social", icon: Users },
-  { name: "Tests", href: "/tests", icon: TestTube },
-  { name: "Learning", href: "/learning", icon: GraduationCap },
-  { name: "Therapists", href: "/therapists", icon: Users },
-  { name: "Me", href: user?.userCode ? `/u/${user.userCode}` : "/profile", icon: User },
-];
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Search, 
+  Bell, 
+  MessageCircle, 
+  Home, 
+  Users, 
+  BookOpen, 
+  User, 
+  Settings, 
+  LogOut, 
+  Plus,
+  ChevronDown,
+  Globe,
+  Lock,
+  Shield,
+  HelpCircle,
+  Sun,
+  Moon,
+  Languages,
+  Briefcase,
+  Calendar,
+  TrendingUp,
+  Award,
+  Star,
+  MapPin,
+  Link as LinkIcon,
+  Mail,
+  Phone,
+  Camera,
+  Edit3,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  AlertCircle,
+  X
+} from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useUserTracking } from '@/hooks/useUserTracking';
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<any>;
+  description?: string;
+}
 
 export default function Navbar() {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState('en');
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  
+  const { getUserContext, isLoggedIn } = useUserTracking();
+  const router = useRouter();
   const pathname = usePathname();
-  const navItems = getNavItems(user);
-
-  // Check for user authentication
-  useEffect(() => {
-    const checkUser = () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (error) {
-          localStorage.removeItem('user');
-        }
-      } else {
-        setUser(null);
-      }
-    };
-    
-    checkUser();
-    
-    // Listen for storage changes (when user logs in/out in another tab)
-    window.addEventListener('storage', checkUser);
-    return () => window.removeEventListener('storage', checkUser);
-  }, []);
-
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showUserMenu && !(event.target as Element).closest('.user-menu-container')) {
-        setShowUserMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showUserMenu]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setShowUserMenu(false);
-    router.push('/');
-  };
+  const user = getUserContext();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (messagesRef.current && !messagesRef.current.contains(event.target as Node)) {
+        setShowMessages(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearch(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const getNavItems = (user: any, pathname: string): NavItem[] => {
+    const items: NavItem[] = [
+      { label: 'AI', href: '/', icon: Home, description: 'AI Assistant & Analysis' },
+      { label: 'Social', href: '/social', icon: Users, description: 'Professional Network' },
+      { label: 'Tests', href: '/tests', icon: Award, description: 'Psychological Assessments' },
+      { label: 'Learning', href: '/learning', icon: BookOpen, description: 'Educational Resources' },
+      { label: 'Therapists', href: '/therapists', icon: User, description: 'Find Professionals' },
+      { label: 'Me', href: '/profile', icon: User, description: 'My Profile & Settings' }
+    ];
+
+    return items;
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setShowUserMenu(false);
+    router.push('/');
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Handle search logic here
+      console.log('Searching for:', searchQuery);
+      setShowSearch(false);
+      setSearchQuery('');
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    // Add dark mode logic here
+  };
+
+  const changeLanguage = (lang: string) => {
+    setLanguage(lang);
+    // Add language change logic here
+  };
+
+  const navItems = getNavItems(user, pathname);
 
   return (
     <>
-      {/* Centered Navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full fixed top-0 z-50 transition-all duration-500 ${
-          scrolled 
-            ? "glass-dark shadow-2xl py-4" 
-            : "bg-transparent py-6"
+        className={`w-full fixed top-2 z-[999999] transition-all duration-500 ${
+          scrolled
+            ? "glass-dark shadow-2xl py-4"
+            : "bg-white/95 backdrop-blur-md border-b border-gray-200 py-6"
         }`}
       >
-        <div className="max-w-4xl mx-auto px-6">
-          
-          {/* Centered Navigation */}
-          <div className="flex justify-center items-center">
-            <div className="hidden md:flex items-center bg-black/20 backdrop-blur-md rounded-full border border-white/10 px-8 py-4 gap-8">
-              {navItems.map((item, index) => {
-                const isActive = pathname === item.href;
-                const IconComponent = item.icon;
-                
-                return (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.5 }}
-                  >
-                    <Link
-                      href={item.href}
-                      className={`
-                        relative px-4 py-2 rounded-full font-medium text-base
-                        transition-all duration-300 group flex items-center gap-2
-                        ${isActive 
-                          ? "text-white preserve-white bg-gradient-to-r from-teal-500 to-blue-500" 
-                          : "text-gray-300 hover:text-white hover:bg-white/10"
-                        }
-                      `}
-                    >
-                      <IconComponent className="w-5 h-5" />
-                      <span className="hidden lg:block">{item.name}</span>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between">
+            
+            {/* Logo & Brand */}
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-3">
+                <img
+                  src="/image/SELPHLYZE_LOGO.png"
+                  alt="SELPHLYZE Logo"
+                  className="w-12 h-12 object-contain drop-shadow-sm"
+                />
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  SELPHLYZE
+                </span>
+              </div>
+              
+              {/* Main Navigation */}
+              <div className="hidden lg:flex items-center space-x-1">
+                                 {navItems.map((item) => {
+                   const Icon = item.icon;
+                   const isActive = pathname === item.href;
+                   
+                   return (
+                     <motion.button
+                       key={item.label}
+                       whileHover={{ scale: 1.05 }}
+                       whileTap={{ scale: 0.95 }}
+                       onClick={() => router.push(item.href)}
+                       className={`group relative px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                         isActive
+                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                       }`}
+                       title={item.description}
+                     >
+                       <div className="flex items-center space-x-2">
+                         <Icon className="w-5 h-5" />
+                         <span>{item.label}</span>
+                       </div>
+                      
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                        {item.description}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="absolute right-6 hidden md:flex items-center space-x-4">
-              {user ? (
-                <div className="relative user-menu-container">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 transition-all"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
-                    </div>
-                    <span className="text-white font-medium">
-                      {user.firstName && user.lastName 
-                        ? `${user.firstName} ${user.lastName}`
-                        : user.name || 'User'
-                      }
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-white/70 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
-                  </button>
 
-                  {/* User Dropdown Menu */}
-                  <AnimatePresence>
-                    {showUserMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50"
-                      >
-                        {/* User Info */}
-                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                              {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900 dark:text-white">
-                                {user.firstName && user.lastName 
-                                  ? `${user.firstName} ${user.lastName}`
-                                  : user.name || 'User'
-                                }
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username || 'username'}</p>
-                            </div>
+            {/* Right Section */}
+            <div className="flex items-center space-x-4">
+              
+              {/* Search */}
+              <div className="relative" ref={searchRef}>
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Search className="w-6 h-6" />
+                </button>
+                
+                <AnimatePresence>
+                  {showSearch && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50"
+                    >
+                      <form onSubmit={handleSearch} className="space-y-4">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search for people, posts, topics..."
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            autoFocus
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <span>Quick filters:</span>
+                          <div className="flex space-x-2">
+                            <button type="button" className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200">
+                              People
+                            </button>
+                            <button type="button" className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200">
+                              Posts
+                            </button>
+                            <button type="button" className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200">
+                              Topics
+                            </button>
                           </div>
                         </div>
+                      </form>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-                        {/* Menu Items */}
-                        <div className="py-2">
-                          <Link
-                            href="/profile"
-                            onClick={() => setShowUserMenu(false)}
-                            className="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <User className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700 dark:text-gray-300">Edit Profile</span>
-                          </Link>
-                          
-                          {user.userCode && (
-                            <Link
-                              href={`/u/${user.userCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => setShowUserMenu(false)}
-                              className="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                              <ExternalLink className="w-4 h-4 text-gray-500" />
-                              <span className="text-gray-700 dark:text-gray-300">Public Profile</span>
-                            </Link>
-                          )}
-                          
-                          <Link
-                            href="/settings"
-                            onClick={() => setShowUserMenu(false)}
-                            className="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <Settings className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700 dark:text-gray-300">Settings</span>
-                          </Link>
-
-                          <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center space-x-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400 w-full text-left"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            <span>Sign Out</span>
-                          </button>
+              {/* Messages */}
+              <div className="relative" ref={messagesRef}>
+                <button
+                  onClick={() => setShowMessages(!showMessages)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors relative"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></span>
+                </button>
+                
+                <AnimatePresence>
+                  {showMessages && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Messages</h3>
+                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                          View All
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <img
+                            src="https://i.pravatar.cc/100?img=1"
+                            alt="User"
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 text-sm">Dr. Sarah Johnson</p>
+                            <p className="text-gray-500 text-xs">Thanks for the connection request!</p>
+                          </div>
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <>
-                  <Link
-                    href="/auth/login"
-                    className="text-white/90 hover:text-white transition-colors font-medium"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/auth/signup"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium"
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
-              <ThemeToggle />
+                        
+                        <div className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <img
+                            src="https://i.pravatar.cc/100?img=2"
+                            alt="User"
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 text-sm">Prof. Michael Chen</p>
+                            <p className="text-gray-500 text-xs">Great article you shared!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Notifications */}
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors relative"
+                >
+                  <Bell className="w-6 h-6" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                </button>
+                
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                          Mark all read
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Users className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-900 text-sm">
+                              <span className="font-medium">Dr. Emily Rodriguez</span> accepted your connection request
+                            </p>
+                            <p className="text-gray-500 text-xs">2 hours ago</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Award className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-900 text-sm">
+                              New test available: <span className="font-medium">Anxiety Assessment</span>
+                            </p>
+                            <p className="text-gray-500 text-xs">1 day ago</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* User Menu */}
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                                     <img
+                     src={`https://ui-avatars.com/api/?name=${user?.firstName || 'User'}&background=0D9488&color=fff&size=40`}
+                     alt="Profile"
+                     className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                   />
+                   <div className="hidden md:block text-left">
+                     <p className="text-sm font-medium text-gray-900">
+                       {user?.firstName || 'User'} {user?.lastName || 'Name'}
+                     </p>
+                     <p className="text-xs text-gray-500">Professional</p>
+                   </div>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+                
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50"
+                    >
+                      {/* User Info */}
+                      <div className="p-4 border-b border-gray-100">
+                        <div className="flex items-center space-x-3">
+                                                     <img
+                             src={`https://ui-avatars.com/api/?name=${user?.firstName || 'User'}&background=0D9488&color=fff&size=60`}
+                             alt="Profile"
+                             className="w-12 h-12 rounded-full object-cover"
+                           />
+                           <div>
+                             <p className="font-semibold text-gray-900">
+                               {user?.firstName || 'User'} {user?.lastName || 'Name'}
+                             </p>
+                             <p className="text-sm text-gray-600">Professional</p>
+                             <p className="text-xs text-gray-500">Company</p>
+                           </div>
+                        </div>
+                      </div>
+                      
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            router.push('/profile');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <User className="w-5 h-5" />
+                          <span>View Profile</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            router.push('/profile');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                          <span>Edit Profile</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            router.push('/settings');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <Settings className="w-5 h-5" />
+                          <span>Settings</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            router.push('/profile');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-5 h-5" />
+                          <span>Public Profile</span>
+                        </button>
+                      </div>
+                      
+                      {/* Divider */}
+                      <div className="border-t border-gray-100 my-2"></div>
+                      
+                      {/* Additional Options */}
+                      <div className="py-2">
+                        <button
+                          onClick={toggleDarkMode}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                          <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => changeLanguage(language === 'en' ? 'fa' : 'en')}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <Languages className="w-5 h-5" />
+                          <span>{language === 'en' ? 'فارسی' : 'English'}</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            router.push('/help');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <HelpCircle className="w-5 h-5" />
+                          <span>Help & Support</span>
+                        </button>
+                      </div>
+                      
+                      {/* Logout */}
+                      <div className="border-t border-gray-100 pt-2">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-            
-            {/* Mobile Menu Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-4 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-white hover:bg-white/10 transition-all duration-300"
-            >
-              <AnimatePresence mode="wait">
-                {isOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <X className="w-6 h-6" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Menu className="w-6 h-6" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
           </div>
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setIsOpen(false)}
-            />
+      {/* Mobile Navigation Overlay */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+        <div className="flex items-center justify-around py-2">
+          {navItems.slice(0, 4).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
             
-            {/* Mobile Menu */}
-            <motion.div
-              initial={{ x: "100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-80 max-w-[85vw] glass-dark border-l border-white/20 z-50 lg:hidden"
-            >
-              <div className="p-6">
-                
-                {/* Mobile Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 flex items-center justify-center">
-                      <Brain className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-xl font-bold text-gradient-psyche">
-                      AI Platform
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-400" />
-                  </button>
-                </div>
-
-                {/* Mobile Navigation */}
-                <nav className="space-y-2">
-                  {navItems.map((item, index) => {
-                    const isActive = pathname === item.href;
-                    const IconComponent = item.icon;
-                    
-                    return (
-                      <motion.div
-                        key={item.name}
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.1, duration: 0.3 }}
-                      >
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`
-                            flex items-center gap-4 px-4 py-4 rounded-xl font-medium
-                            transition-all duration-300 group
-                            ${isActive 
-                              ? "text-white preserve-white bg-gradient-to-r from-teal-500/20 via-blue-500/20 to-purple-500/20 border border-teal-400/30" 
-                              : "text-gray-300 hover:text-white hover:bg-white/5"
-                            }
-                          `}
-                        >
-                          <IconComponent className="w-5 h-5" />
-                          <span className="text-lg">{item.name}</span>
-                          
-                          {isActive && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="ml-auto w-2 h-2 bg-teal-400 rounded-full"
-                            />
-                          )}
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </nav>
-
-                {/* Mobile Footer */}
-                <div className="mt-8 pt-6 border-t border-white/10">
-                  {user ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                          {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">
-                            {user.firstName && user.lastName 
-                              ? `${user.firstName} ${user.lastName}`
-                              : user.name || 'User'
-                            }
-                          </p>
-                          <p className="text-sm text-white/70">@{user.username || 'username'}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Link
-                          href="/profile"
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center space-x-3 py-2 text-white/90 hover:text-white transition-colors"
-                        >
-                          <User className="w-4 h-4" />
-                          <span>My Profile</span>
-                        </Link>
-                        <Link
-                          href="/settings"
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center space-x-3 py-2 text-white/90 hover:text-white transition-colors"
-                        >
-                          <Settings className="w-4 h-4" />
-                          <span>Settings</span>
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center space-x-3 py-2 text-red-400 hover:text-red-300 transition-colors"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <Link
-                        href="/auth/login"
-                        onClick={() => setIsOpen(false)}
-                        className="block w-full text-center py-2 text-white/90 hover:text-white transition-colors font-medium"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        href="/auth/signup"
-                        onClick={() => setIsOpen(false)}
-                        className="block w-full text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium"
-                      >
-                        Sign Up
-                      </Link>
-                    </div>
-                  )}
-                  <div className="mt-4 flex items-center justify-between">
-                  <ThemeToggle />
-                    <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-gray-500">AI Online</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            return (
+              <button
+                key={item.label}
+                onClick={() => router.push(item.href)}
+                className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </>
   );
 }

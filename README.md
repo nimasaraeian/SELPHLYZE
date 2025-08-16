@@ -9,16 +9,35 @@ npm run dev
 2) Open http://localhost:3000
 
 ### Environment Variables
-Create `.env.local` in project root:
-```
-OPENAI_API_KEY=sk-...
+Create `.env.local` in project root with the following variables:
+
+```bash
+# OpenAI Configuration (Required for AI features)
+OPENAI_API_KEY=sk-your-openai-api-key-here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-NEXT_PUBLIC_SUPABASE_URL=https://bavznukicjivkchyzzgu.supabase.co
+
+# Supabase Configuration (Required for database)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# NextAuth Configuration (Required for authentication)
+NEXTAUTH_SECRET=your-secret-key-here-change-this
+NEXTAUTH_URL=http://localhost:3000
+
+# OAuth Providers (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+FACEBOOK_CLIENT_ID=your-facebook-client-id
+FACEBOOK_CLIENT_SECRET=your-facebook-client-secret
 ```
-Do NOT commit `.env.local` (already ignored).
+
+**Important Notes:**
+- Do NOT commit `.env.local` (already ignored by .gitignore)
+- Get your OpenAI API key from: https://platform.openai.com/api-keys
+- Get your Supabase credentials from your Supabase project dashboard
+- Without `OPENAI_API_KEY`, AI features will not work and you'll see "OpenAI key is missing" errors
 
 ### Build
 ```bash

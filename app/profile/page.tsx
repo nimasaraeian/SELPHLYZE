@@ -77,6 +77,47 @@ export default function ProfilePage() {
     }));
   };
 
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result as string;
+        
+        // Update both user state and editData
+        setUser((prev: any) => ({
+          ...prev,
+          profileImage: imageUrl
+        }));
+        
+        setEditData((prev: any) => ({
+          ...prev,
+          profileImage: imageUrl
+        }));
+
+        // Save to localStorage
+        const updatedUser = { ...user, profileImage: imageUrl };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // Trigger storage event to update navbar
+        window.dispatchEvent(new Event('storage'));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     // Trigger storage event to update navbar
@@ -134,12 +175,46 @@ export default function ProfilePage() {
               {/* Profile Picture */}
               <div className="text-center mb-6">
                 <div className="relative inline-block">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                    {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
-                  </div>
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                  {user.profileImage ? (
+                    <img 
+                      src={user.profileImage} 
+                      alt="Profile" 
+                      className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                      {user.firstName ? user.firstName[0] : user.name ? user.name[0] : 'U'}
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => document.getElementById('profileImageInput')?.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors cursor-pointer"
+                    title="Change profile picture"
+                  >
                     <Camera className="w-4 h-4" />
                   </button>
+                  {user.profileImage && (
+                    <button 
+                      onClick={() => {
+                        setUser((prev: any) => ({ ...prev, profileImage: null }));
+                        setEditData((prev: any) => ({ ...prev, profileImage: null }));
+                        const updatedUser = { ...user, profileImage: null };
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        window.dispatchEvent(new Event('storage'));
+                      }}
+                      className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+                      title="Remove profile picture"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                  <input
+                    id="profileImageInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfileImageChange}
+                    className="hidden"
+                  />
                 </div>
                 <h2 className="text-xl font-bold text-[var(--foreground)]">
                   {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name || 'User'}
@@ -158,8 +233,8 @@ export default function ProfilePage() {
                     {user.accountType === 'individual' && <User className="w-3 h-3 mr-1" />}
                     {user.accountType || 'Individual'} Account
                   </span>
-                </div>
               </div>
+            </div>
 
               {/* Profile URL */}
               {user.userCode && (
@@ -172,7 +247,7 @@ export default function ProfilePage() {
                       <code className="flex-1 text-gray-600 dark:text-gray-400 truncate">
                         selphlyze.com/u/{user.userCode}
                       </code>
-                      <button
+                <button 
                         onClick={() => {
                           const url = `${window.location.origin}/u/${user.userCode}`;
                           navigator.clipboard.writeText(url);
@@ -181,7 +256,7 @@ export default function ProfilePage() {
                         className="text-blue-600 hover:text-blue-700 p-1"
                       >
                         📋
-                      </button>
+                </button>
                       <a
                         href={`/u/${user.userCode}`}
                         target="_blank"
@@ -192,7 +267,7 @@ export default function ProfilePage() {
                       </a>
                     </div>
                   </div>
-                </div>
+              </div>
               )}
 
               {/* Quick Stats */}
@@ -211,8 +286,8 @@ export default function ProfilePage() {
                     <Shield className="w-4 h-4 mr-1" />
                     Pending
                   </span>
-                </div>
-              </div>
+          </div>
+        </div>
 
               {/* Action Buttons */}
               <div className="space-y-3 mt-6">
@@ -270,7 +345,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                <div>
+                        <div>
                   <label className="block text-sm font-medium text-[var(--muted)] mb-2">
                     First Name
                   </label>
@@ -285,7 +360,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                       <User className="w-5 h-5 text-[var(--muted)] mr-3" />
-                      <span>{user.firstName || 'Not provided'}</span>
+                      <span>{user.firstName || 'Click Edit Profile to add your first name'}</span>
                     </div>
                   )}
                 </div>
@@ -305,10 +380,10 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                       <User className="w-5 h-5 text-[var(--muted)] mr-3" />
-                      <span>{user.lastName || 'Not provided'}</span>
-                    </div>
-                  )}
-                </div>
+                      <span>{user.lastName || 'Click Edit Profile to add your last name'}</span>
+            </div>
+          )}
+            </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[var(--muted)] mb-2">
@@ -317,8 +392,8 @@ export default function ProfilePage() {
                   <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                     <Mail className="w-5 h-5 text-[var(--muted)] mr-3" />
                     <span>{user.email || 'Not provided'}</span>
-                  </div>
-                </div>
+              </div>
+            </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[var(--muted)] mb-2">
@@ -335,9 +410,9 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                       <Phone className="w-5 h-5 text-[var(--muted)] mr-3" />
-                      <span>{user.phone || 'Not provided'}</span>
-                    </div>
-                  )}
+                      <span>{user.phone || 'Click Edit Profile to add your phone number'}</span>
+            </div>
+          )}
                 </div>
               </div>
             </motion.div>
@@ -358,7 +433,7 @@ export default function ProfilePage() {
                       Specialization
                     </label>
                     {isEditing ? (
-                      <input
+                    <input 
                         type="text"
                         name="specialization"
                         value={editData.specialization || ''}
@@ -368,7 +443,7 @@ export default function ProfilePage() {
                     ) : (
                       <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                         <Briefcase className="w-5 h-5 text-[var(--muted)] mr-3" />
-                        <span>{user.specialization || 'Not provided'}</span>
+                        <span>{user.specialization || 'Click Edit Profile to add your specialization'}</span>
                       </div>
                     )}
                   </div>
@@ -378,7 +453,7 @@ export default function ProfilePage() {
                       Experience Level
                     </label>
                     {isEditing ? (
-                      <input
+                    <input 
                         type="text"
                         name="experience"
                         value={editData.experience || ''}
@@ -388,7 +463,7 @@ export default function ProfilePage() {
                     ) : (
                       <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                         <BarChart3 className="w-5 h-5 text-[var(--muted)] mr-3" />
-                        <span>{user.experience || 'Not provided'}</span>
+                        <span>{user.experience || 'Click Edit Profile to add your experience level'}</span>
                       </div>
                     )}
                   </div>
@@ -408,8 +483,8 @@ export default function ProfilePage() {
                     ) : (
                       <div className="flex items-center px-4 py-3 bg-[var(--accent)] rounded-lg">
                         <MapPin className="w-5 h-5 text-[var(--muted)] mr-3" />
-                        <span>{user.institution || 'Not provided'}</span>
-                      </div>
+                        <span>{user.institution || 'Click Edit Profile to add your institution'}</span>
+                  </div>
                     )}
                   </div>
                 </div>
@@ -426,8 +501,8 @@ export default function ProfilePage() {
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Shield className="w-6 h-6 text-white" />
-                </div>
-                <div>
+              </div>
+                  <div>
                   <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     🔐 Your Privacy is Protected
                   </h3>
@@ -440,7 +515,7 @@ export default function ProfilePage() {
               </div>
             </motion.div>
 
-          </div>
+            </div>
         </div>
       </div>
     </div>

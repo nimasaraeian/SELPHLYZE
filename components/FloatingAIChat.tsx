@@ -57,24 +57,15 @@ export default function FloatingAIChat() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load chat history
+  // Don't load chat history - start fresh each time
   useEffect(() => {
+    // Clear any existing chat history when component mounts
     if (typeof window !== 'undefined') {
-      const savedChat = localStorage.getItem("globalAIChatHistory");
-      if (savedChat) {
-        try {
-          const parsedMessages = JSON.parse(savedChat);
-          // Convert timestamp strings back to Date objects
-          const messagesWithDates = parsedMessages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp)
-          }));
-          setMessages(messagesWithDates);
-        } catch (error) {
-          console.error("Error loading chat history:", error);
-        }
-      }
+      localStorage.removeItem("globalAIChatHistory");
     }
+    // Start with empty messages
+    setMessages([]);
+    setIsOpen(false);
   }, []);
 
   // Sync currentLanguage with global language

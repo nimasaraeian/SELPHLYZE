@@ -53,23 +53,15 @@ export default function SimpleAISearch() {
     setCurrentLanguage(globalLanguage);
   }, [globalLanguage]);
 
-  // Load chat history only (no profile collection on landing)
+  // Don't load chat history - start fresh each time
   useEffect(() => {
+    // Clear any existing chat history when component mounts
     if (typeof window !== 'undefined') {
-      const savedChat = localStorage.getItem("simpleAiChatHistory");
-      if (savedChat) {
-        try {
-          const parsedMessages = JSON.parse(savedChat);
-          const messagesWithDates = parsedMessages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp)
-          }));
-          setChatMessages(messagesWithDates);
-        } catch (error) {
-          console.error("Error loading chat history:", error);
-        }
-      }
+      localStorage.removeItem("simpleAiChatHistory");
     }
+    // Start with empty chat messages
+    setChatMessages([]);
+    setShowChat(false);
   }, []);
 
   // Save chat to localStorage
